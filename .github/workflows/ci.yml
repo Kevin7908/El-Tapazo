@@ -7,6 +7,7 @@ on:
 
 jobs:
   backend:
+    name: Backend (Django)
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -24,34 +25,57 @@ jobs:
       run:
         working-directory: apps/backend-django
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
           cache: pip
-      - run: pip install -r requirements/local.txt
-      - name: Lint
+          cache-dependency-path: apps/backend-django/requirements/*.txt
+
+      - name: Instalar dependencias
+        run: pip install -r requirements/local.txt
+
+      - name: Lint (ruff)
         run: ruff check .
-      - name: Tests
+
+      - name: Verificar el proyecto
         env:
           POSTGRES_HOST: localhost
           DJANGO_SECRET_KEY: ci-secret-key
-        run: pytest
+        run: python manage.py check
+
+      - name: Pruebas (pytest)
+        env:
+          POSTGRES_HOST: localhost
+          DJANGO_SECRET_KEY: ci-secret-key
+        # pytest devuelve 5 cuando todavía no hay pruebas escritas: eso no es un
+        # fallo. Cuando existan pruebas, un fallo real devuelve 1 y rompe el CI.
+        run: pytest || [ "$?" -eq 5 ]
 
   frontend:
+    name: Frontend (React)
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: apps/frontend-react
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
         with:
           node-version: "24"
           cache: npm
           cache-dependency-path: apps/frontend-react/package-lock.json
-      - run: npm ci
-      - name: Lint
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint (eslint)
         run: npm run lint
+
+      - name: Pruebas (vitest)
+        run: npm run test
+
       - name: Build
         run: npm run build

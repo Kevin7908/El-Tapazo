@@ -80,7 +80,12 @@ Ya están en `.gitignore`, pero para tenerlo claro:
 - `.venv/`, `__pycache__/`
 - `media/` (archivos subidos por usuarios), `staticfiles/`
 
-Las **migraciones sí se suben**: son parte del código.
+Sí se suben, en cambio:
+
+- Las **migraciones** de Django: son parte del código.
+- El **`package-lock.json`**: es lo que garantiza que todos instalemos
+  exactamente las mismas versiones de npm. Si instalas una dependencia nueva,
+  súbelo junto con el `package.json`.
 
 ---
 

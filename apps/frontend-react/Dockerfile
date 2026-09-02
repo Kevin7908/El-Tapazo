@@ -9,7 +9,7 @@ WORKDIR /app
 
 # Se copian solo los manifiestos para aprovechar la caché de capas de Docker.
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host"]
