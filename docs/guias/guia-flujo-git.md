@@ -1,6 +1,7 @@
 # Guía de flujo de trabajo con Git
 
-Acuerdo del equipo para no pisarnos el trabajo.
+Acuerdo del equipo para no pisarnos el trabajo. Si tienes dudas, sigue los
+bloques de comandos tal cual: están en el orden en que se usan.
 
 ---
 
@@ -8,66 +9,195 @@ Acuerdo del equipo para no pisarnos el trabajo.
 
 | Rama | Para qué |
 | --- | --- |
-| `main` | Código estable. **No se hace commit directo aquí.** |
-| `dev` | Integración del trabajo del equipo (opcional si el equipo es pequeño). |
-| `feature/<nombre>` | Una funcionalidad nueva. |
+| `main` | Código estable, listo para mostrar o desplegar. **No se hace commit directo aquí.** |
+| `dev` | Rama de integración: aquí se junta el trabajo de todos. |
+| `feat/<nombre>` | Una funcionalidad nueva. |
 | `fix/<nombre>` | Corrección de un error. |
 | `docs/<nombre>` | Cambios solo de documentación. |
+| `refactor/<nombre>` | Reorganizar código sin cambiar lo que hace. |
+| `chore/<nombre>` | Configuración, dependencias, mantenimiento. |
 
-```bash
-git checkout dev
-git fetch
-git pull origin dev
-git checkout -b feature/registro-de-productos
+El `<nombre>` va en minúsculas, en español, separado por guiones y describiendo
+**qué** se hace, no quién lo hace:
+
+```
+feat/registro-de-productos
+fix/calculo-de-stock
+docs/guia-de-instalacion
 ```
 
 ---
 
-## Commits
+# CÓMO HACER UN BUEN COMMIT
 
-Formato [Conventional Commits](https://www.conventionalcommits.org/es/):
+## Lo normal
+
+```bash
+git commit -m "<tipo>: <resumen corto>" -m "<explicación más larga, opcional>"
+```
+
+## Commit largo (editor)
+
+```bash
+git commit
+```
+
+Y en el editor escribes:
 
 ```
-<tipo>(<alcance opcional>): <descripción en presente>
+feat: estructura inicial del backend
+
+Crear la configuración del proyecto Django
+Agregar las apps accounts, catalog e inventory
+Definir la estructura de carpetas por capas
+Dejar el entorno listo para Docker
 ```
 
-| Tipo | Cuándo |
-| --- | --- |
-| `feat` | Funcionalidad nueva |
-| `fix` | Corrección de un error |
-| `docs` | Documentación |
-| `refactor` | Cambio de código sin cambiar el comportamiento |
-| `test` | Pruebas |
-| `chore` | Configuración, dependencias, tareas de mantenimiento |
+**Formato:** primera línea corta (máx. ~72 caracteres), en presente y sin punto
+final. Después una línea en blanco y, si hace falta, el detalle en viñetas.
 
-Ejemplos:
+## Tipos de commit (`<tipo>`)
+
+```
+feat     # Funcionalidad nueva
+fix      # Corrección de un error
+refactor # Mejora del código sin cambiar el comportamiento
+docs     # Documentación
+test     # Pruebas
+chore    # Mantenimiento / configuración / dependencias
+style    # Solo formato (espacios, comas, sangría)
+```
+
+Opcionalmente se puede indicar el módulo entre paréntesis:
 
 ```
 feat(catalog): agregar modelo de producto
-fix(inventory): corregir cálculo de stock disponible
-docs(guias): agregar guía de instalación
-chore(docker): actualizar postgres a 18
+fix(inventory): corregir el cálculo de stock disponible
+docs(guias): agregar la guía de instalación
+chore(docker): actualizar postgres a la versión 18
+```
+
+## ¿Qué estamos commiteando?
+
+**Siempre revisa antes de commitear.** No hagas `git add .` a ciegas:
+
+```bash
+git status        # qué archivos cambiaron
+git diff          # qué cambió exactamente dentro de ellos
+git add .         # o mejor: git add <archivo1> <archivo2>
+git status        # confirmar qué quedó en verde (listo para el commit)
 ```
 
 ---
 
-## Antes de subir
+# FLUJO DE TRABAJO EN GITHUB
+
+## 1. Crear la rama a partir de `dev`
 
 ```bash
-./dev.sh lint      # revisa el estilo en backend y frontend
-./dev.sh test      # corre las pruebas
+git checkout dev
+git fetch origin
+git pull origin dev
+git checkout -b feat/registro-de-productos
+git push -u origin feat/registro-de-productos
 ```
+
+> `git fetch` + `git pull` antes de crear la rama es lo que evita que trabajes
+> sobre código viejo y termines con conflictos innecesarios.
+
+## 2. Trabajar y commitear
+
+```bash
+git status
+git diff
+git add .
+git commit -m "feat(catalog): agregar el modelo de producto"
+git push -u origin feat/registro-de-productos
+```
+
+Puedes repetir este paso todas las veces que quieras: es mejor **varios commits
+pequeños** que uno gigante al final.
+
+Antes de subir, revisa que no rompiste nada:
+
+```bash
+./dev.sh lint      # estilo en backend y frontend
+./dev.sh test      # pruebas
+```
+
+## 3. Llevar los cambios a `dev`
+
+```bash
+git checkout dev
+git fetch origin
+git pull origin dev
+git merge feat/registro-de-productos
+```
+
+## 4. Si hay conflictos, resolverlos
+
+Git te dirá qué archivos chocaron:
+
+```bash
+git status                    # lista los archivos en conflicto
+# ... abrir cada archivo y dejar la versión correcta ...
+git add <archivo-resuelto>
+git commit                    # confirma el merge
+```
+
+## 5. Subir `dev`
+
+```bash
+git push origin dev
+```
+
+## 6. Revisar GitHub Actions
+
+Entra a la pestaña **Actions** del repositorio y mira el resultado del workflow
+`CI` para tu push:
+
+- ✅ **verde** — backend y frontend pasaron lint, pruebas y build. Listo.
+- ❌ **rojo** — abre el job que falló, lee el log, corrige y vuelve a subir.
+
+El CI corre automáticamente en cada push a `main` y a `dev`, y en cada pull
+request. Lo que revisa es exactamente lo que puedes correr en tu máquina con
+`./dev.sh lint` y `./dev.sh test`, así que si eso te pasa localmente, el CI
+también debería pasar.
+
+## 7. De `dev` a `main`
+
+Solo cuando `dev` está estable y el CI en verde. Se hace por **pull request**
+en GitHub (`dev` → `main`), con al menos una revisión de otra persona.
 
 ---
 
-## Pull request
+## Chuleta completa
 
 ```bash
-git push origin feature/registro-de-productos
-```
+# --- empezar algo nuevo ---
+git checkout dev
+git fetch origin
+git pull origin dev
+git checkout -b feat/mi-cambio
+git push -u origin feat/mi-cambio
 
-En el PR: qué se hizo, cómo probarlo y capturas si hay cambios visuales.
-Se necesita al menos una revisión de otra persona antes de mezclar.
+# --- mientras trabajas ---
+git status
+git diff
+git add .
+git commit -m "feat: descripción de lo que hice"
+git push
+
+# --- terminaste: integrar a dev ---
+./dev.sh lint && ./dev.sh test
+git checkout dev
+git fetch origin
+git pull origin dev
+git merge feat/mi-cambio
+git push origin dev
+
+# --- revisar el CI en la pestaña Actions de GitHub ---
+```
 
 ---
 
