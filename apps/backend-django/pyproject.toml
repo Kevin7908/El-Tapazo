@@ -1,0 +1,32 @@
+# Configuración de herramientas (no se usa para instalar dependencias:
+# eso vive en requirements/).
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+exclude = ["migrations", ".venv", "staticfiles"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "DJ", "C4", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "config",
+    "core",
+    "accounts",
+    "catalog",
+    "inventory",
+    "warehouses",
+    "suppliers",
+    "purchases",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py", "tests.py"]
+addopts = "-ra --strict-markers"
+testpaths = ["accounts", "catalog", "inventory", "warehouses", "suppliers", "purchases", "core"]
+
+[tool.coverage.run]
+omit = ["*/migrations/*", "*/tests/*", "config/*", "manage.py"]
