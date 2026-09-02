@@ -1,0 +1,85 @@
+# Entorno de DESARROLLO.
+# Uso:  docker compose up
+#
+# El código se monta como volumen: lo que edites en tu editor se refleja
+# dentro del contenedor sin reconstruir la imagen.
+
+name: el-tapaso
+
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: tapaso_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-el_tapaso}
+      POSTGRES_USER: ${POSTGRES_USER:-el_tapaso}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-el_tapaso}
+    volumes:
+      - postgres_data:/var/lib/postgresql   # PostgreSQL 18+ espera el mount aquí, no en .../data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${POSTGRES_PORT_HOST:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-el_tapaso} -d ${POSTGRES_DB:-el_tapaso}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - tapaso_net
+
+  backend:
+    build:
+      context: ./apps/backend-django
+      target: development
+    container_name: tapaso_backend
+    restart: unless-stopped
+    command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.local
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-insecure-change-me}
+      DJANGO_DEBUG: "True"
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,backend
+      POSTGRES_DB: ${POSTGRES_DB:-el_tapaso}
+      POSTGRES_USER: ${POSTGRES_USER:-el_tapaso}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-el_tapaso}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      CORS_ALLOWED_ORIGINS: http://localhost:5173
+    volumes:
+      - ./apps/backend-django:/app
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - tapaso_net
+
+  frontend:
+    build:
+      context: ./apps/frontend-react
+      target: development
+    container_name: tapaso_frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/api/v1}
+      VITE_APP_NAME: ${VITE_APP_NAME:-El Tapaso}
+    volumes:
+      - ./apps/frontend-react:/app
+      # Volumen anónimo: evita que el node_modules del host pise el del contenedor.
+      - /app/node_modules
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    depends_on:
+      - backend
+    networks:
+      - tapaso_net
+
+volumes:
+  postgres_data:
+
+networks:
+  tapaso_net:
+    driver: bridge
