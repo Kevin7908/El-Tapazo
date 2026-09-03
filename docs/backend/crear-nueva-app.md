@@ -8,7 +8,7 @@ manteniendo la estructura del proyecto.
 ## 1. Crear la app
 
 ```bash
-./dev.sh startapp sales
+./dev.sh startapp ventas
 ```
 
 Queda en `apps/backend-django/sales/` con la estructura mínima de Django.
@@ -19,8 +19,8 @@ Queda en `apps/backend-django/sales/` con la estructura mínima de Django.
 
 ```bash
 docker compose exec backend bash -c '
-cd /app/sales
-for d in api dto exceptions permissions repositories selectors services tests validators; do
+cd /app/ventas
+for d in api dtos excepciones permisos repositorios selectores servicios pruebas validadores; do
   mkdir -p $d && touch $d/__init__.py
 done
 touch README.md
@@ -35,10 +35,10 @@ touch README.md
 from django.apps import AppConfig
 
 
-class SalesConfig(AppConfig):
+class VentasConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "sales"
-    verbose_name = "Sales"
+    name = "ventas"
+    verbose_name = "Ventas"
 ```
 
 ---
@@ -52,7 +52,7 @@ LOCAL_APPS = [
     "core",
     "accounts",
     ...
-    "sales",     # <- nueva
+    "ventas",     # <- nueva
 ]
 ```
 
@@ -60,10 +60,10 @@ LOCAL_APPS = [
 
 ## 5. Crear `urls.py` y engancharla
 
-`sales/urls.py`:
+`ventas/urls.py`:
 
 ```python
-app_name = "sales"
+app_name = "ventas"
 
 urlpatterns = []
 ```
@@ -71,14 +71,14 @@ urlpatterns = []
 En `config/urls.py`, dentro de `api_v1_patterns`:
 
 ```python
-path("sales/", include("sales.urls")),
+path("ventas/", include("ventas.urls")),
 ```
 
 ---
 
 ## 6. Escribir el README de la app
 
-`sales/README.md`: para qué sirve el módulo y qué entidades maneja. Copiar la
+`ventas/README.md`: para qué sirve el módulo y qué entidades maneja. Copiar la
 tabla de carpetas de otra app para mantener el formato.
 
 ---
@@ -87,7 +87,7 @@ tabla de carpetas de otra app para mantener el formato.
 
 ```bash
 ./dev.sh manage check
-./dev.sh makemigrations sales
+./dev.sh makemigrations ventas
 ./dev.sh migrate
 ```
 
@@ -95,7 +95,7 @@ tabla de carpetas de otra app para mantener el formato.
 
 ## 8. Agregarla a las pruebas
 
-En `pyproject.toml`, sumar `"sales"` a `testpaths` y a
+En `pyproject.toml`, sumar `"ventas"` a `testpaths` y a
 `[tool.ruff.lint.isort] known-first-party`.
 
 ---

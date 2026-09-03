@@ -13,20 +13,20 @@ ignore = ["E501"]
 [tool.ruff.lint.isort]
 known-first-party = [
     "config",
-    "core",
-    "accounts",
-    "catalog",
-    "inventory",
-    "warehouses",
-    "suppliers",
-    "purchases",
+    "nucleo",
+    "negocios",
+    "usuarios",
+    "catalogo",
+    "inventario",
+    "eventos",
+    "distribucion",
 ]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["test_*.py", "tests.py"]
 addopts = "-ra --strict-markers"
-testpaths = ["accounts", "catalog", "inventory", "warehouses", "suppliers", "purchases", "core"]
+testpaths = ["nucleo", "negocios", "usuarios", "catalogo", "inventario", "eventos", "distribucion"]
 
 [tool.coverage.run]
 omit = ["*/migrations/*", "*/tests/*", "config/*", "manage.py"]

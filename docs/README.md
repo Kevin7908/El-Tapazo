@@ -10,6 +10,7 @@ Cómo trabajar en el proyecto.
 | --- | --- |
 | [guia-instalacion.md](guias/guia-instalacion.md) | Instalar todo y levantar el proyecto por primera vez (script `dev.sh`). |
 | [guia-comandos.md](guias/guia-comandos.md) | Chuleta de comandos del día a día (backend y frontend). |
+| [guia-base-de-datos.md](guias/guia-base-de-datos.md) | Modo local vs Supabase, y cómo conectar cada uno. |
 | [guia-docker.md](guias/guia-docker.md) | Cómo está armado el entorno de contenedores y cómo resolver problemas. |
 | [guia-flujo-git.md](guias/guia-flujo-git.md) | Ramas, commits y pull requests. |
 

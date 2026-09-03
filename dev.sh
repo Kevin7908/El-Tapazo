@@ -51,6 +51,13 @@ crear_env_si_falta() {
     cp "$ENV_EXAMPLE" "$ENV_FILE"
     ok "Archivo .env creado a partir de .env.example"
   fi
+  # Los .env creados antes de que existiera el modo Supabase no tienen esta
+  # variable; sin ella Compose no levantaría la base de datos local.
+  if ! grep -qE "^COMPOSE_PROFILES=" "$ENV_FILE"; then
+    printf '\n# local-db = contenedor de PostgreSQL; vacío = base remota (Supabase)\nCOMPOSE_PROFILES=local-db\n' >> "$ENV_FILE"
+    aviso "Se añadió COMPOSE_PROFILES=local-db a tu .env"
+  fi
+
   # Los .env de cada app sirven para correr sin Docker; se crean por comodidad.
   for app in backend-django frontend-react; do
     if [ -f "apps/$app/.env.example" ] && [ ! -f "apps/$app/.env" ]; then
@@ -79,6 +86,22 @@ escribir_env() {      # escribir_env CLAVE VALOR  (conserva el comentario final)
     rm -f "${ENV_FILE}.bak"
   else
     printf '%s=%s\n' "$clave" "$valor" >> "$ENV_FILE"
+  fi
+}
+
+# --------------------------- ¿la BD es local? ------------------------------ #
+usa_bd_local() {
+  case ",$(leer_env COMPOSE_PROFILES)," in
+    *,local-db,*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+descripcion_bd() {
+  if usa_bd_local; then
+    printf "localhost:%s (contenedor)" "$(leer_env POSTGRES_PORT_HOST)"
+  else
+    printf "%s (remota)" "$(leer_env POSTGRES_HOST)"
   fi
 }
 
@@ -136,7 +159,11 @@ asignar_puertos() {
   backend_deseado="$(leer_env BACKEND_PORT)";   backend_deseado="${backend_deseado:-$DEFAULT_BACKEND_PORT}"
   frontend_deseado="$(leer_env FRONTEND_PORT)"; frontend_deseado="${frontend_deseado:-$DEFAULT_FRONTEND_PORT}"
 
-  DB_PORT="$(buscar_puerto_libre "$db_deseado")"
+  if usa_bd_local; then
+    DB_PORT="$(buscar_puerto_libre "$db_deseado")"
+  else
+    DB_PORT="$db_deseado"   # base remota: no se publica ningún puerto local
+  fi
   BACKEND_PORT="$(buscar_puerto_libre "$backend_deseado")"
   # El frontend no puede quedar en el mismo puerto que el backend.
   FRONTEND_PORT="$(buscar_puerto_libre "$frontend_deseado")"
@@ -148,13 +175,17 @@ asignar_puertos() {
   [ "$BACKEND_PORT" = "$backend_deseado" ]   || aviso "Puerto $backend_deseado ocupado -> backend en $BACKEND_PORT"
   [ "$FRONTEND_PORT" = "$frontend_deseado" ] || aviso "Puerto $frontend_deseado ocupado -> frontend en $FRONTEND_PORT"
 
-  escribir_env POSTGRES_PORT_HOST "$DB_PORT"
+  usa_bd_local && escribir_env POSTGRES_PORT_HOST "$DB_PORT"
   escribir_env BACKEND_PORT       "$BACKEND_PORT"
   escribir_env FRONTEND_PORT      "$FRONTEND_PORT"
   # El navegador llama a la API por el puerto publicado: deben ir sincronizados.
   escribir_env VITE_API_URL       "http://localhost:${BACKEND_PORT}/api/v1"
 
-  ok "Puertos: base de datos $DB_PORT · backend $BACKEND_PORT · frontend $FRONTEND_PORT"
+  if usa_bd_local; then
+    ok "Puertos: base de datos $DB_PORT · backend $BACKEND_PORT · frontend $FRONTEND_PORT"
+  else
+    ok "Puertos: backend $BACKEND_PORT · frontend $FRONTEND_PORT · BD remota: $(leer_env POSTGRES_HOST)"
+  fi
 }
 
 # ------------------------------- ayudantes --------------------------------- #
@@ -178,11 +209,22 @@ mostrar_urls() {
   printf "  API ................... http://localhost:%s/api/v1/\n" "$backend"
   printf "  Documentación API ..... http://localhost:%s/api/docs/\n" "$backend"
   printf "  Admin de Django ....... http://localhost:%s/admin/\n" "$backend"
-  printf "  PostgreSQL ............ localhost:%s\n\n" "$db"
+  printf "  Base de datos ......... %s\n\n" "$(descripcion_bd)"
   printf "  Logs:   ./dev.sh logs        Apagar:  ./dev.sh down\n\n"
 }
 
 # ------------------------------- comandos ---------------------------------- #
+# Al pasar de base local a remota, el contenedor de PostgreSQL se queda
+# corriendo aunque ya no haga falta (Compose no lo considera huérfano porque
+# el servicio sigue definido, solo que fuera del perfil activo).
+apagar_bd_local_sobrante() {
+  usa_bd_local && return 0
+  docker ps --format '{{.Names}}' | grep -qx tapaso_db || return 0
+  aviso "La base de datos es remota: apagando el contenedor local sobrante"
+  COMPOSE_PROFILES=local-db docker compose stop db >/dev/null 2>&1 || true
+  COMPOSE_PROFILES=local-db docker compose rm -f db >/dev/null 2>&1 || true
+}
+
 cmd_up() {
   local construir=0 servicios=()
   for arg in "$@"; do
@@ -199,10 +241,12 @@ cmd_up() {
 
   info "Levantando contenedores..."
   if [ "$construir" -eq 1 ]; then
-    docker compose up -d --build ${servicios[@]+"${servicios[@]}"}
+    docker compose up -d --build --remove-orphans ${servicios[@]+"${servicios[@]}"}
   else
-    docker compose up -d ${servicios[@]+"${servicios[@]}"}
+    docker compose up -d --remove-orphans ${servicios[@]+"${servicios[@]}"}
   fi
+
+  apagar_bd_local_sobrante
 
   info "Esperando a que respondan los servicios..."
   if esperar_servicio "http://localhost:$(leer_env BACKEND_PORT)/api/docs/" 90; then

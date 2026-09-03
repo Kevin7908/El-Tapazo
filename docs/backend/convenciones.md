@@ -6,15 +6,17 @@
 
 | Elemento | Estilo | Ejemplo |
 | --- | --- | --- |
-| Apps y módulos | `snake_case`, en inglés y en plural cuando aplique | `warehouses`, `stock_movements.py` |
-| Clases | `PascalCase` | `StockMovement`, `ProductSerializer` |
+| Apps y módulos | `snake_case`, en español y en plural cuando aplique | `negocios`, `movimientos_inventario.py` |
+| Clases | `PascalCase` | `MovimientoInventario`, `ProductoSerializer` |
 | Funciones y variables | `snake_case` | `registrar_entrada()`, `stock_actual` |
 | Constantes | `MAYÚSCULAS` | `MAX_ITEMS_POR_ORDEN` |
-| Modelos | Singular | `Product`, no `Products` |
-| Endpoints | `kebab-case` en plural | `/api/v1/inventory/stock-movements/` |
+| Modelos | Singular | `Producto`, no `Productos` |
+| Endpoints | `kebab-case` en plural | `/api/v1/inventario/movimientos/` |
 
-Acuerdo del equipo: **el código y los nombres técnicos en inglés; los comentarios,
-docstrings y documentación en español.**
+Acuerdo del equipo: **todo en español** — apps, modelos, campos, funciones,
+carpetas y documentación. Las únicas excepciones son los nombres que exige
+Django (`models.py`, `admin.py`, `apps.py`, `migrations/`, `password`,
+`last_login`, `is_superuser`). Ver [reglas 03](../../varios/reglas/03-estilo-y-nombres.md).
 
 ---
 
@@ -32,7 +34,7 @@ línea de 100 caracteres, imports ordenados automáticamente.
 
 ## Modelos
 
-- Heredar del modelo base de `core` cuando haga falta `created_at`/`updated_at`.
+- Heredar del modelo base de `nucleo` cuando haga falta `created_at`/`updated_at`.
 - Siempre definir `class Meta` con `ordering` y `verbose_name`.
 - Siempre definir `__str__`.
 - Usar `DecimalField` para dinero y cantidades, **nunca** `FloatField`.
@@ -49,7 +51,7 @@ línea de 100 caracteres, imports ordenados automáticamente.
 - Una función por caso de uso, con nombre de verbo.
 - Reciben datos ya validados; no reciben `request`.
 - Si escriben en varias tablas, envolver en `transaction.atomic()`.
-- Lanzan excepciones del dominio (`exceptions/`), no `Response` ni `Http404`.
+- Lanzan excepciones del dominio (`excepciones/`), no `Response` ni `Http404`.
 - No importan nada de `api/`: la dependencia va en un solo sentido
   (`api → services → repositories → models`).
 
@@ -71,7 +73,7 @@ línea de 100 caracteres, imports ordenados automáticamente.
 
 - Se generan con `./dev.sh makemigrations` y **se suben a git**.
 - Una migración por cambio lógico, con nombre descriptivo:
-  `./dev.sh makemigrations catalog -n add_barcode_to_product`
+  `./dev.sh makemigrations catalogo -n add_barcode_to_product`
 - Nunca editar una migración que ya está en `main`: crear una nueva.
 - Migraciones de datos: en un archivo aparte, con `RunPython` y su función
   inversa.
@@ -80,8 +82,8 @@ línea de 100 caracteres, imports ordenados automáticamente.
 
 ## Pruebas
 
-- Con `pytest` + `pytest-django`, dentro de `tests/` de cada app.
-- Un archivo por capa: `test_models.py`, `test_services.py`, `test_selectors.py`,
+- Con `pytest` + `pytest-django`, dentro de `pruebas/` de cada app.
+- Un archivo por capa: `test_models.py`, `test_servicios.py`, `test_selectores.py`,
   `test_api.py`.
 - Nombres explícitos: `def test_registrar_entrada_aumenta_el_stock():`
 - Datos de prueba con `factory-boy`, no con fixtures JSON.
@@ -90,7 +92,7 @@ línea de 100 caracteres, imports ordenados automáticamente.
 
 ```bash
 ./dev.sh test back
-docker compose exec backend pytest catalog -v
+docker compose exec backend pytest catalogo -v
 docker compose exec backend pytest --cov
 ```
 

@@ -10,12 +10,12 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 api_v1_patterns = [
-    path("accounts/", include("accounts.urls")),
-    path("catalog/", include("catalog.urls")),
-    path("warehouses/", include("warehouses.urls")),
-    path("suppliers/", include("suppliers.urls")),
-    path("inventory/", include("inventory.urls")),
-    path("purchases/", include("purchases.urls")),
+    path("negocios/", include("negocios.urls")),
+    path("usuarios/", include("usuarios.urls")),
+    path("catalogo/", include("catalogo.urls")),
+    path("inventario/", include("inventario.urls")),
+    path("eventos/", include("eventos.urls")),
+    path("distribucion/", include("distribucion.urls")),
 ]
 
 urlpatterns = [

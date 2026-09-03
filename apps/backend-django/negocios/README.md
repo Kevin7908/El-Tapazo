@@ -1,0 +1,23 @@
+# App: `negocios`
+
+Negocios (la raíz del modelo de datos): casi todo lo demás cuelga de un negocio.
+
+**Modelos:** `Negocio`.
+
+## Carpetas
+
+| Carpeta | Qué va aquí |
+| --- | --- |
+| `api/` | Vistas, serializers y routers (capa HTTP). |
+| `dtos/` | Objetos de transferencia de datos entre capas (dataclasses). |
+| `excepciones/` | Excepciones propias del dominio de esta app. |
+| `migrations/` | Migraciones de base de datos (nombre exigido por Django). |
+| `permisos/` | Permisos de DRF específicos de esta app. |
+| `repositorios/` | Acceso a datos: consultas al ORM aisladas del resto. |
+| `selectores/` | Lecturas / consultas de negocio. |
+| `servicios/` | Reglas de negocio y escrituras. |
+| `pruebas/` | Pruebas de esta app. |
+| `validadores/` | Validaciones reutilizables del dominio. |
+
+Reglas de código: [`varios/reglas/`](../../../varios/reglas/README.md) ·
+Arquitectura: [`docs/backend/estructura.md`](../../../docs/backend/estructura.md)

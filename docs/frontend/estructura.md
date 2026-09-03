@@ -2,9 +2,9 @@
 
 Qué va exactamente en cada carpeta de `apps/frontend-react/`.
 
-La organización es **por funcionalidad** (*feature-based*): el código de una
+La organización es **por módulo de negocio** (*feature-based*): el código de una
 misma parte del negocio vive junto, en vez de estar repartido entre carpetas
-gigantes de `components/`, `hooks/` y `services/`.
+gigantes de `componentes/`, `hooks/` y `api/`.
 
 ---
 
@@ -15,36 +15,35 @@ apps/frontend-react/
 ├── public/                 Archivos servidos tal cual (favicon, robots.txt)
 ├── src/
 │   ├── app/                Arranque de la aplicación
-│   │   ├── main.jsx        Punto de entrada: monta React en el DOM
-│   │   ├── App.jsx         Componente raíz
-│   │   └── providers.jsx   Providers globales (datos, router, tema, auth)
+│   │   ├── principal.jsx   Punto de entrada: monta React en el DOM
+│   │   ├── Aplicacion.jsx  Componente raíz
+│   │   └── proveedores.jsx Proveedores globales (datos, rutas, tema, sesión)
 │   │
-│   ├── assets/             Imágenes, iconos y fuentes usadas desde el código
+│   ├── recursos/           Imágenes, iconos y fuentes usadas desde el código
 │   │
-│   ├── components/         Componentes compartidos por toda la app
-│   │   ├── ui/             Piezas básicas sin lógica de negocio (Button, Input, Modal)
-│   │   ├── common/         Componentes reutilizables con algo de lógica (DataTable, SearchBar)
-│   │   └── layout/         Piezas de la estructura visual (Header, Sidebar, Footer)
+│   ├── componentes/        Componentes compartidos por toda la app
+│   │   ├── ui/             Piezas básicas sin lógica de negocio (Boton, Campo, Modal)
+│   │   ├── comunes/        Reutilizables con algo de lógica (Tabla, Buscador)
+│   │   └── estructura/     Piezas del armazón visual (Encabezado, Menu, PieDePagina)
 │   │
-│   ├── config/             Constantes y lectura de variables de entorno
+│   ├── configuracion/      Constantes y lectura de variables de entorno
 │   │
-│   ├── features/           EL NÚCLEO: una carpeta por módulo del negocio
-│   │   ├── auth/
-│   │   ├── catalog/
-│   │   ├── inventory/
-│   │   ├── warehouses/
-│   │   ├── suppliers/
-│   │   └── purchases/
+│   ├── modulos/            EL NÚCLEO: una carpeta por módulo del negocio
+│   │   ├── autenticacion/
+│   │   ├── catalogo/
+│   │   ├── inventario/
+│   │   ├── eventos/
+│   │   └── distribucion/
 │   │
 │   ├── hooks/              Hooks reutilizables por toda la app
-│   ├── layouts/            Plantillas de página (con sidebar, en blanco, de login)
-│   ├── lib/                Configuración de librerías externas (axios, react-query)
-│   ├── pages/              Páginas globales que no pertenecen a una feature (404, Home)
-│   ├── routes/             Definición de las rutas y protección de rutas privadas
-│   ├── store/              Estado global compartido
-│   ├── styles/             Estilos globales y variables de diseño
-│   ├── utils/              Funciones auxiliares puras (formatear moneda, fechas)
-│   └── tests/              Configuración y utilidades de pruebas
+│   ├── plantillas/         Plantillas de página (con menú, en blanco, de login)
+│   ├── librerias/          Configuración de librerías externas (axios, react-query)
+│   ├── paginas/            Páginas globales que no son de ningún módulo (404, Inicio)
+│   ├── rutas/              Definición de rutas y protección de las privadas
+│   ├── estado/             Estado global compartido
+│   ├── estilos/            Estilos globales y variables de diseño
+│   ├── utilidades/         Funciones auxiliares puras (formatear moneda, fechas)
+│   └── pruebas/            Configuración y utilidades de pruebas
 │
 ├── index.html              Plantilla base de Vite
 ├── vite.config.js          Configuración de Vite (alias @, servidor, pruebas)
@@ -54,28 +53,31 @@ apps/frontend-react/
 └── Dockerfile
 ```
 
+> Se quedan en inglés `src/`, `public/`, `app/`, `hooks/`, `index.html` y los
+> archivos de configuración: son nombres que esperan Vite, React o el propio
+> ecosistema. `hook` además no tiene traducción usada en la práctica.
+
 ---
 
-## Anatomía de una feature
+## Anatomía de un módulo
 
-Cada carpeta de `features/` es un módulo autocontenido:
+Cada carpeta de `modulos/` es autocontenida:
 
 ```
-features/catalog/
-├── api/            Llamadas HTTP de este módulo (getProducts, createProduct)
-├── components/     Componentes que solo usa este módulo (ProductForm, ProductCard)
-├── hooks/          Hooks del módulo (useProducts, useProductForm)
-├── pages/          Pantallas completas (ProductListPage, ProductDetailPage)
-├── store/          Estado local del módulo, si lo necesita
-└── utils/          Funciones auxiliares del módulo
+modulos/catalogo/
+├── api/            Llamadas HTTP de este módulo (obtenerProductos, crearProducto)
+├── componentes/    Componentes que solo usa este módulo (FormularioProducto)
+├── hooks/          Hooks del módulo (useProductos)
+├── paginas/        Pantallas completas (PaginaListaProductos)
+├── estado/         Estado local del módulo, si lo necesita
+└── utilidades/     Funciones auxiliares del módulo
 ```
 
-**Regla:** si algo lo usa **una sola** feature, va dentro de esa feature. Solo
-cuando lo necesita una segunda feature se sube a `src/components/`, `src/hooks/`
-o `src/utils/`. Así se evita el `components/` inmanejable con 80 archivos
-sueltos.
+**Regla:** si algo lo usa **un solo** módulo, va dentro de ese módulo. Solo
+cuando lo necesita un segundo se sube a `src/componentes/`, `src/hooks/` o
+`src/utilidades/`. Así se evita el `componentes/` inmanejable con 80 archivos.
 
-**Regla 2:** una feature no importa cosas de otra feature. Si dos necesitan lo
+**Regla 2:** un módulo no importa cosas de otro módulo. Si dos necesitan lo
 mismo, ese código sube un nivel.
 
 ---
@@ -83,19 +85,19 @@ mismo, ese código sube un nivel.
 ## Cómo fluye un dato
 
 ```
- Página (features/catalog/pages/ProductListPage.jsx)
+ Página (modulos/catalogo/paginas/PaginaListaProductos.jsx)
       │  usa
       ▼
- Hook  (features/catalog/hooks/useProducts.js)   ← react-query: caché, loading, errores
+ Hook  (modulos/catalogo/hooks/useProductos.js)   ← react-query: caché, carga, errores
       │  llama
       ▼
- API   (features/catalog/api/productsApi.js)
+ API   (modulos/catalogo/api/apiProductos.js)
       │  usa
       ▼
- apiClient (lib/apiClient.js)  ── axios configurado con la URL base y el token
+ clienteApi (librerias/clienteApi.js)  ── axios con la URL base y el token
       │
       ▼
- Backend Django  /api/v1/catalog/products/
+ Backend Django  /api/v1/catalogo/productos/
 ```
 
 El componente no llama a `axios` directamente: llama a un hook. El hook llama a
@@ -107,79 +109,82 @@ la capa `api/`. Así, si cambia un endpoint, se toca un solo archivo.
 
 ### `app/`
 
-El arranque. `main.jsx` monta React; `App.jsx` es la raíz; `providers.jsx`
-concentra todos los providers globales (React Query, Router, y más adelante el
-de autenticación o el de tema). Se toca poco.
+El arranque. `principal.jsx` monta React; `Aplicacion.jsx` es la raíz;
+`proveedores.jsx` concentra los proveedores globales (React Query, Router, y más
+adelante el de sesión o el de tema). Se toca poco.
 
-### `components/ui/`
+### `componentes/ui/`
 
-Piezas de interfaz genéricas y "tontas": `Button`, `Input`, `Select`, `Modal`,
-`Spinner`. No saben nada del negocio y no hacen peticiones. Son las que dan
+Piezas de interfaz genéricas y "tontas": `Boton`, `Campo`, `Selector`, `Modal`,
+`Cargando`. No saben nada del negocio y no hacen peticiones. Son las que dan
 consistencia visual a toda la app.
 
-### `components/common/`
+### `componentes/comunes/`
 
-Componentes reutilizables que sí tienen algo de lógica pero siguen sin ser de un
-módulo concreto: `DataTable`, `SearchBar`, `Pagination`, `ConfirmDialog`.
+Reutilizables que sí tienen algo de lógica pero no son de un módulo concreto:
+`TablaDatos`, `Buscador`, `Paginacion`, `DialogoConfirmacion`.
 
-### `components/layout/`
+### `componentes/estructura/`
 
-`Header`, `Sidebar`, `Footer`, `Breadcrumbs`: las piezas con las que se arman
-los layouts.
+`Encabezado`, `MenuLateral`, `PieDePagina`, `Migas`: las piezas con las que se
+arman las plantillas.
 
-### `layouts/`
+### `plantillas/`
 
-Plantillas de página completas que combinan lo anterior: `MainLayout` (sidebar +
-header, para la app ya autenticada), `AuthLayout` (pantalla limpia para el
-login). Las rutas se envuelven con un layout.
+Plantillas de página completas que combinan lo anterior: `PlantillaPrincipal`
+(menú + encabezado, para la app ya autenticada), `PlantillaAcceso` (pantalla
+limpia para el login). Las rutas se envuelven con una plantilla.
 
-### `config/`
+### `configuracion/`
 
-`env.js` es el **único** archivo donde se lee `import.meta.env`. El resto del
-código importa `env` desde aquí. También van las constantes globales (estados,
-roles, tipos de movimiento).
+`entorno.js` es el **único** archivo donde se lee `import.meta.env`. El resto del
+código importa `entorno` desde aquí. También van las constantes globales
+(estados, roles, tipos de movimiento).
 
-### `lib/`
+### `librerias/`
 
 Configuración de librerías externas en un solo lugar:
-- `apiClient.js` — instancia de axios con la URL base, los headers y los
+
+- `clienteApi.js` — instancia de axios con la URL base, las cabeceras y los
   interceptores (agregar el token, manejar el 401).
-- `queryClient.js` — configuración de React Query.
+- `clienteConsultas.js` — configuración de React Query.
 
 ### `hooks/`
 
-Hooks generales: `useDebounce`, `useLocalStorage`, `useMediaQuery`. Los que son
-de un módulo van en `features/<x>/hooks/`.
+Hooks generales: `useDebounce`, `useAlmacenamientoLocal`, `useMediaQuery`. Los de
+un módulo van en `modulos/<x>/hooks/`.
 
-### `pages/`
+### `paginas/`
 
-Páginas que no pertenecen a ninguna feature: `HomePage`, `NotFoundPage`,
-`ForbiddenPage`. Las páginas de negocio viven en `features/<x>/pages/`.
+Páginas que no pertenecen a ningún módulo: `PaginaInicio`,
+`PaginaNoEncontrada`, `PaginaSinPermiso`. Las páginas de negocio viven en
+`modulos/<x>/paginas/`.
 
-### `routes/`
+### `rutas/`
 
-`index.jsx` define el árbol de rutas. Aquí también va `ProtectedRoute`, el
+`index.jsx` define el árbol de rutas. Aquí también va `RutaProtegida`, el
 componente que manda al login si no hay sesión.
 
-### `store/`
+### `estado/`
 
 Estado global que cruza módulos: sesión del usuario, notificaciones, tema.
 **Ojo:** los datos que vienen del servidor no van aquí — de eso se encarga React
-Query. El store es solo para estado de la interfaz.
+Query. El estado global es solo para la interfaz.
 
-### `styles/`
+### `estilos/`
 
-`global.css` con el reset y las variables CSS (colores, espaciados, tipografía).
+`globales.css` con el reset y las variables CSS (colores, espaciados,
+tipografía).
 
-### `utils/`
+### `utilidades/`
 
-Funciones puras y sin dependencias: `formatCurrency`, `formatDate`,
+Funciones puras y sin dependencias: `formatearMoneda`, `formatearFecha`,
 `calcularTotal`. Fáciles de probar.
 
-### `tests/`
+### `pruebas/`
 
-`setup.js` para Vitest y utilidades compartidas. Las pruebas de cada componente
-van al lado del componente (`Button.test.jsx`).
+`configuracion.js` para Vitest y utilidades compartidas. Las pruebas de cada
+componente van al lado del componente (`Boton.test.jsx`).
 
 ---
 
@@ -188,8 +193,8 @@ van al lado del componente (`Button.test.jsx`).
 `@` apunta a `src/`. Evita los imports frágiles con `../../../`:
 
 ```js
-import { apiClient } from '@/lib/apiClient'      // ✅
-import { apiClient } from '../../../lib/apiClient'  // ❌
+import { clienteApi } from '@/librerias/clienteApi'          // ✅
+import { clienteApi } from '../../../librerias/clienteApi'   // ❌
 ```
 
 Está configurado en `vite.config.js` (para el build) y en `jsconfig.json` (para
@@ -201,13 +206,13 @@ que el editor lo autocomplete).
 
 | Lo que quiero hacer | Dónde va |
 | --- | --- |
-| Una pantalla nueva de productos | `features/catalog/pages/` |
-| El formulario de esa pantalla | `features/catalog/components/` |
-| Llamar al endpoint de productos | `features/catalog/api/` |
-| Traer y cachear esos datos | `features/catalog/hooks/` (con React Query) |
-| Un botón que se usa en toda la app | `components/ui/` |
-| Una tabla reutilizable | `components/common/` |
-| Formatear pesos colombianos | `utils/` |
-| Guardar el usuario logueado | `store/` |
-| Registrar una ruta nueva | `routes/index.jsx` |
-| Un color o espaciado del diseño | `styles/global.css` |
+| Una pantalla nueva de productos | `modulos/catalogo/paginas/` |
+| El formulario de esa pantalla | `modulos/catalogo/componentes/` |
+| Llamar al endpoint de productos | `modulos/catalogo/api/` |
+| Traer y cachear esos datos | `modulos/catalogo/hooks/` (con React Query) |
+| Un botón que se usa en toda la app | `componentes/ui/` |
+| Una tabla reutilizable | `componentes/comunes/` |
+| Formatear pesos colombianos | `utilidades/` |
+| Guardar el usuario con sesión iniciada | `estado/` |
+| Registrar una ruta nueva | `rutas/index.jsx` |
+| Un color o espaciado del diseño | `estilos/globales.css` |

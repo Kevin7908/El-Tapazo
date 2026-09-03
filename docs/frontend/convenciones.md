@@ -26,11 +26,11 @@ Un componente por archivo, y el nombre del archivo igual al del componente.
 - Nada de lógica de negocio pesada dentro del JSX: sacarla a un hook o a `utils/`.
 
 ```jsx
-// ProductCard.jsx
-export default function ProductCard({ product, onSelect }) {
+// TarjetaProducto.jsx
+export default function TarjetaProducto({ producto, alSeleccionar }) {
   return (
-    <article onClick={() => onSelect(product.id)}>
-      <h3>{product.name}</h3>
+    <article onClick={() => alSeleccionar(producto.id)}>
+      <h3>{producto.nombre}</h3>
     </article>
   )
 }
@@ -45,7 +45,7 @@ export default function ProductCard({ product, onSelect }) {
 | Estado de un componente | `useState` |
 | Estado compartido entre pocos componentes | Levantarlo al padre o `useContext` |
 | **Datos del servidor** | **React Query** (`useQuery` / `useMutation`) |
-| Estado global de la interfaz (sesión, tema) | `store/` |
+| Estado global de la interfaz (sesión, tema) | `estado/` |
 
 El error más común es guardar en un store la lista de productos que vino de la
 API. Eso lo maneja React Query: ya trae caché, `isLoading`, `error` y
@@ -56,25 +56,28 @@ revalidación.
 ## Llamadas a la API
 
 - Nunca `axios` ni `fetch` directo dentro de un componente.
-- La capa `features/<x>/api/` es la única que conoce las URLs.
+- La capa `modulos/<x>/api/` es la única que conoce las URLs.
 - Los hooks envuelven esas funciones con React Query.
-- La URL base sale de `config/env.js`, jamás escrita a mano.
+- La URL base sale de `configuracion/entorno.js`, jamás escrita a mano.
 
 ```js
-// features/catalog/api/productsApi.js
-import { apiClient } from '@/lib/apiClient'
+// modulos/catalogo/api/apiProductos.js
+import { clienteApi } from '@/librerias/clienteApi'
 
-export const getProducts = (params) =>
-  apiClient.get('/catalog/products/', { params }).then((r) => r.data)
+export const obtenerProductos = (params) =>
+  clienteApi.get('/catalogo/productos/', { params }).then((r) => r.data)
 ```
 
 ```js
-// features/catalog/hooks/useProducts.js
+// modulos/catalogo/hooks/useProductos.js
 import { useQuery } from '@tanstack/react-query'
-import { getProducts } from '../api/productsApi'
+import { obtenerProductos } from '../api/apiProductos'
 
-export function useProducts(params) {
-  return useQuery({ queryKey: ['products', params], queryFn: () => getProducts(params) })
+export function useProductos(params) {
+  return useQuery({
+    queryKey: ['productos', params],
+    queryFn: () => obtenerProductos(params),
+  })
 }
 ```
 
@@ -89,7 +92,7 @@ vacío. Una tabla sin el mensaje de "no hay resultados" se siente rota.
 
 ## Estilos
 
-- Variables CSS en `styles/global.css` para colores, espaciados y tipografía.
+- Variables CSS en `estilos/globales.css` para colores, espaciados y tipografía.
 - Nada de colores escritos a mano dentro de los componentes.
 - Diseño responsive: la app se va a usar también desde el celular en la bodega.
 

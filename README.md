@@ -64,6 +64,7 @@ El-Tapaso/
 
 - [Guía de instalación](docs/guias/guia-instalacion.md) — de cero a la app corriendo.
 - [Guía de comandos](docs/guias/guia-comandos.md) — chuleta del día a día.
+- [Guía de base de datos](docs/guias/guia-base-de-datos.md) — modo local vs Supabase.
 - [Guía de Docker](docs/guias/guia-docker.md) — cómo funciona el entorno y cómo arreglar problemas.
 - [Flujo de trabajo con Git](docs/guias/guia-flujo-git.md) — ramas, commits y PRs.
 - [Estructura del backend](docs/backend/estructura.md) · [Convenciones](docs/backend/convenciones.md) · [Crear una app nueva](docs/backend/crear-nueva-app.md)

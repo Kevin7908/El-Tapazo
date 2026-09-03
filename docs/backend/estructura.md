@@ -18,13 +18,13 @@ apps/backend-django/
 │   ├── wsgi.py             Punto de entrada para gunicorn
 │   └── asgi.py             Punto de entrada asíncrono
 │
-├── core/                   Código compartido entre todas las apps
-├── accounts/               Usuarios, autenticación y roles
-├── catalog/                Productos, categorías, marcas, unidades
-├── warehouses/             Bodegas y ubicaciones
-├── suppliers/              Proveedores
-├── inventory/              Stock, movimientos (kardex), ajustes y transferencias
-├── purchases/              Órdenes de compra y entradas de mercancía
+├── nucleo/                 Código compartido entre todas las apps
+├── negocios/               Negocios (la raíz: todo cuelga de aquí)
+├── usuarios/               Quien opera el sistema, roles e invitaciones
+├── catalogo/               Productos y precios
+├── inventario/             Ubicaciones, existencias y kardex de movimientos
+├── eventos/                Canal evento/bar: pulseras NFC, cuentas, comandas y pagos
+├── distribucion/           Canal mayorista: tiendas cliente y sus pedidos
 │
 ├── requirements/           Dependencias por entorno
 ├── scripts/                Scripts del contenedor (entrypoint)
@@ -46,17 +46,17 @@ todas.
 ## Anatomía de una app
 
 ```
-catalog/
+catalogo/
 ├── api/            Capa HTTP: vistas, serializers, routers
-├── dto/            Objetos de transferencia de datos entre capas
-├── exceptions/     Errores propios del dominio
-├── migrations/     Migraciones de base de datos (las genera Django)
-├── permissions/    Permisos de DRF de esta app
-├── repositories/   Acceso a datos: consultas al ORM
-├── selectors/      Consultas de negocio (lectura)
-├── services/       Reglas de negocio (escritura)
-├── tests/          Pruebas
-├── validators/     Validaciones reutilizables
+├── dtos/           Objetos de transferencia de datos entre capas
+├── excepciones/    Errores propios del dominio
+├── migrations/     Migraciones de base de datos (nombre exigido por Django)
+├── permisos/       Permisos de DRF de esta app
+├── repositorios/   Acceso a datos: consultas al ORM
+├── selectores/     Consultas de negocio (lectura)
+├── servicios/      Reglas de negocio (escritura)
+├── pruebas/        Pruebas
+├── validadores/    Validaciones reutilizables
 ├── __init__.py
 ├── admin.py        Registro en el panel de administración
 ├── apps.py         Configuración de la app
@@ -64,6 +64,9 @@ catalog/
 ├── urls.py         Rutas de la app
 └── README.md       Para qué sirve esta app
 ```
+
+> `models.py`, `admin.py`, `apps.py` y `migrations/` conservan su nombre en
+> inglés porque Django los busca exactamente así. Todo lo demás va en español.
 
 ---
 
@@ -73,18 +76,18 @@ catalog/
 Petición HTTP
      │
      ▼
- urls.py ──> api/views.py ──> api/serializers.py   (¿los datos llegan bien?)
+ urls.py ──> api/vistas.py ──> api/serializers.py  (¿los datos llegan bien?)
      │                              │
      │                              ▼
-     │                        validators/          (¿son válidos para el negocio?)
+     │                       validadores/          (¿son válidos para el negocio?)
      │                              │
      │              ┌───────────────┴───────────────┐
      │              ▼                               ▼
-     │        selectors/  (leer)            services/  (escribir)
+     │       selectores/  (leer)           servicios/  (escribir)
      │              │                               │
      │              └───────────────┬───────────────┘
      │                              ▼
-     │                        repositories/         (hablar con el ORM)
+     │                       repositorios/          (hablar con el ORM)
      │                              │
      │                              ▼
      │                          models.py           (tablas)
@@ -103,16 +106,16 @@ responde.
 
 Todo lo que tiene que ver con HTTP y con el formato de entrada/salida.
 
-- `views.py` (o `viewsets.py`) — recibe la petición, llama a un *service* o a un
+- `vistas.py` (o `viewsets.py`) — recibe la petición, llama a un *service* o a un
   *selector*, devuelve la respuesta. Debe ser corto.
 - `serializers.py` — convierte JSON ↔ objetos de Python y valida el **formato**
   de los datos (tipos, campos obligatorios, longitudes).
 - `routers.py` / `urls.py` — arma las rutas de la app.
-- `filters.py` — filtros de `django-filter` para los listados.
+- `filtros.py` — filtros de `django-filter` para los listados.
 
 No va aquí: reglas de negocio, consultas complejas al ORM.
 
-### `services/` — las reglas de negocio (escritura)
+### `servicios/` — las reglas de negocio (escritura)
 
 Una función por caso de uso. Reciben datos ya validados, ejecutan la regla y
 guardan. Son el corazón del sistema: aquí vive lo que hace el negocio, no en la
@@ -124,14 +127,14 @@ Ejemplos para este proyecto: `registrar_entrada_de_mercancia`,
 Reglas: una función = una acción; reciben tipos simples o DTOs, no objetos
 `request`; si tocan varias tablas, van dentro de una transacción.
 
-### `selectors/` — las consultas de negocio (lectura)
+### `selectores/` — las consultas de negocio (lectura)
 
-El espejo de `services/` para leer. Devuelven los datos ya preparados para
+El espejo de `servicios/` para leer. Devuelven los datos ya preparados para
 mostrar: `obtener_stock_por_bodega`, `listar_productos_bajo_minimo`.
 
 Separar lectura de escritura evita que un archivo gigante mezcle las dos cosas.
 
-### `repositories/` — el acceso a datos
+### `repositorios/` — el acceso a datos
 
 Las consultas al ORM aisladas en un solo lugar. Los *services* y *selectors*
 llaman al repositorio en vez de escribir `Model.objects.filter(...)` regados por
@@ -140,13 +143,13 @@ todo el código.
 Ventaja: si cambia una consulta o hay que optimizarla, se toca un solo archivo,
 y las pruebas pueden reemplazar el repositorio por uno falso.
 
-### `dto/` — objetos de transferencia
+### `dtos/` — objetos de transferencia
 
 `dataclasses` que llevan datos entre capas sin arrastrar objetos de Django.
 Sirven para que un *service* reciba un paquete de datos claro y tipado en vez de
 un diccionario suelto.
 
-### `validators/` — validaciones reutilizables
+### `validadores/` — validaciones reutilizables
 
 Funciones que verifican reglas del dominio: que un SKU tenga el formato
 acordado, que una cantidad no sea negativa, que un NIT sea válido. Se usan desde
@@ -156,12 +159,12 @@ Diferencia con el serializer: el serializer valida **forma** (es un entero, no
 está vacío); el validator valida **negocio** (ese código ya existe, esa cantidad
 supera el stock).
 
-### `permissions/` — quién puede hacer qué
+### `permisos/` — quién puede hacer qué
 
 Clases de permisos de DRF propias de la app: `EsAdministradorDeBodega`,
 `PuedeAjustarInventario`.
 
-### `exceptions/` — errores del dominio
+### `excepciones/` — errores del dominio
 
 Excepciones propias (`StockInsuficiente`, `ProductoDuplicado`) que los services
 lanzan y que el manejador global de `core/exceptions/` traduce a una respuesta
@@ -172,7 +175,7 @@ HTTP con su código correspondiente. Así el negocio no sabe nada de HTTP.
 Las genera Django con `makemigrations`. **Se suben a git** y no se editan a
 mano salvo casos puntuales (migraciones de datos).
 
-### `tests/` — pruebas
+### `pruebas/` — pruebas
 
 Un archivo por capa: `test_services.py`, `test_selectors.py`, `test_api.py`,
 `test_models.py`. Ver [convenciones.md](convenciones.md).
@@ -180,7 +183,7 @@ Un archivo por capa: `test_services.py`, `test_selectors.py`, `test_api.py`,
 ### `models.py` — las tablas
 
 Solo la definición de datos: campos, relaciones, `Meta`, `__str__`, propiedades
-calculadas simples. Las reglas de negocio con varios pasos van en `services/`,
+calculadas simples. Las reglas de negocio con varios pasos van en `servicios/`,
 no en el modelo.
 
 Si una app llega a tener muchos modelos, `models.py` puede volverse la carpeta
@@ -197,20 +200,20 @@ Se incluye desde `config/urls.py` bajo `/api/v1/<app>/`.
 
 ---
 
-## `core/` — lo compartido
+## `nucleo/` — lo compartido
 
 Lo que usan todas las apps y no pertenece a ningún dominio:
 
 | Carpeta | Contenido |
 | --- | --- |
-| `models.py` | Modelos abstractos base, p. ej. `TimeStampedModel` con `created_at`/`updated_at`. |
+| `models.py` | Modelos abstractos base, p. ej. `ModeloConFechas` con `created_at`/`updated_at`. |
 | `api/` | Vistas y serializers base, mixins comunes. |
-| `exceptions/` | Excepción base del proyecto y el *exception handler* global de DRF. |
+| `excepciones/` | Excepción base del proyecto y el *exception handler* global de DRF. |
 | `pagination/` | Clases de paginación compartidas. |
 | `middleware/` | Middlewares propios. |
 | `utils/` | Utilidades genéricas. |
 
-Si algo se usa en dos apps o más, probablemente va en `core/`.
+Si algo se usa en dos apps o más, probablemente va en `nucleo/`.
 
 ---
 
@@ -234,12 +237,12 @@ Cuál se usa lo decide la variable `DJANGO_SETTINGS_MODULE` (la define el
 | Lo que quiero hacer | Dónde va |
 | --- | --- |
 | Definir una tabla nueva | `models.py` |
-| Exponer un endpoint | `api/views.py` + `urls.py` |
+| Exponer un endpoint | `api/vistas.py` + `urls.py` |
 | Convertir un modelo a JSON | `api/serializers.py` |
-| "Al registrar una entrada, sumar stock y crear el movimiento" | `services/` |
-| "Traer los productos por debajo del stock mínimo" | `selectors/` |
-| Una consulta al ORM que se repite | `repositories/` |
-| "El SKU debe tener este formato" | `validators/` |
-| "Solo el jefe de bodega puede hacer esto" | `permissions/` |
-| "No hay stock suficiente" (error) | `exceptions/` |
-| Algo que usan dos o más apps | `core/` |
+| "Al registrar una entrada, sumar stock y crear el movimiento" | `servicios/` |
+| "Traer los productos por debajo del stock mínimo" | `selectores/` |
+| Una consulta al ORM que se repite | `repositorios/` |
+| "El SKU debe tener este formato" | `validadores/` |
+| "Solo el jefe de bodega puede hacer esto" | `permisos/` |
+| "No hay stock suficiente" (error) | `excepciones/` |
+| Algo que usan dos o más apps | `nucleo/` |

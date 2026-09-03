@@ -44,13 +44,13 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    "core",
-    "accounts",
-    "catalog",
-    "warehouses",
-    "suppliers",
-    "inventory",
-    "purchases",
+    "nucleo",
+    "negocios",
+    "usuarios",
+    "catalogo",
+    "inventario",
+    "eventos",
+    "distribucion",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -102,8 +102,8 @@ DATABASES = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Cuando se cree el modelo de usuario propio en `accounts`, descomentar:
-# AUTH_USER_MODEL = "accounts.User"
+# Identidad propia: el correo es el nombre de usuario (ver usuarios/models.py).
+AUTH_USER_MODEL = "usuarios.Usuario"
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
