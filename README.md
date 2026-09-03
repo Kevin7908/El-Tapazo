@@ -72,5 +72,7 @@ El-Tapaso/
 
 ## Estado
 
-Estructura inicial: carpetas, contenedores y documentación. Todavía **no hay
-lógica de negocio** implementada (modelos, endpoints ni pantallas).
+Entorno y documentación listos. Del modelo de datos están implementados
+`negocios`, `usuarios` e `invitaciones`, y el catálogo (`categorias`,
+`proveedores`, `productos`, `productos_proveedores`). Faltan inventario,
+eventos y distribución, y todavía **no hay endpoints ni pantallas**.

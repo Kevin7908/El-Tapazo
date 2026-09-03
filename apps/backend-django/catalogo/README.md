@@ -1,8 +1,13 @@
 # App: `catalogo`
 
-Catálogo de productos del negocio: qué se vende, a qué costo y a qué precio en cada canal.
+Catálogo del negocio: qué se vende, de qué tipo, a qué precio en cada canal y a
+quién se le compra.
 
-**Modelos previstos:** `Producto`.
+**Modelos:** `Categoria` · `Proveedor` · `Producto` · `ProductoProveedor`.
+
+Un producto pertenece a una categoría y se le puede comprar a varios
+proveedores: `ProductoProveedor` guarda el precio de compra de cada uno y cuál
+es el habitual.
 
 ## Carpetas
 
