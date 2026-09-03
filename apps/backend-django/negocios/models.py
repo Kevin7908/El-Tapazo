@@ -22,6 +22,7 @@ class Negocio(ModeloConFechas):
     )
 
     class Meta:
+        db_table = "negocios"
         ordering = ["nombre_comercial"]
         verbose_name = "negocio"
         verbose_name_plural = "negocios"

@@ -35,7 +35,10 @@ línea de 100 caracteres, imports ordenados automáticamente.
 ## Modelos
 
 - Heredar del modelo base de `nucleo` cuando haga falta `created_at`/`updated_at`.
-- Siempre definir `class Meta` con `ordering` y `verbose_name`.
+- Siempre definir `class Meta` con `db_table`, `ordering` y `verbose_name`.
+- **`db_table` obligatorio y en plural.** Sin él, Django nombra la tabla
+  `app_modelo` (`usuarios_usuario`, `negocios_negocio`). Queremos los nombres
+  del diseño: `usuarios`, `negocios`, `invitaciones`, `movimientos_inventario`.
 - Siempre definir `__str__`.
 - Usar `DecimalField` para dinero y cantidades, **nunca** `FloatField`.
 - `related_name` explícito en las relaciones.

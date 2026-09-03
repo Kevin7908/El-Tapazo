@@ -91,12 +91,36 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     es_staff = models.BooleanField("accede al admin de Django", default=False)
     fecha_alta = models.DateTimeField("fecha de alta", default=timezone.now)
 
+    # Django trae estos dos campos en `PermissionsMixin`. Se redeclaran igual
+    # que allí, solo para ponerle nombre en español a la tabla intermedia: sin
+    # esto se llamarían `usuarios_usuario_groups` y
+    # `usuarios_usuario_user_permissions`.
+    groups = models.ManyToManyField(
+        "auth.Group",
+        verbose_name="grupos",
+        blank=True,
+        help_text="Grupos a los que pertenece; hereda los permisos de cada uno.",
+        related_name="user_set",
+        related_query_name="user",
+        db_table="usuarios_grupos",
+    )
+    user_permissions = models.ManyToManyField(
+        "auth.Permission",
+        verbose_name="permisos del usuario",
+        blank=True,
+        help_text="Permisos concedidos directamente a este usuario.",
+        related_name="user_set",
+        related_query_name="user",
+        db_table="usuarios_permisos",
+    )
+
     objects = GestorDeUsuarios()
 
     USERNAME_FIELD = "correo"
     REQUIRED_FIELDS = ["nombre", "apellido"]
 
     class Meta:
+        db_table = "usuarios"
         ordering = ["nombre", "apellido"]
         verbose_name = "usuario"
         verbose_name_plural = "usuarios"
@@ -175,6 +199,7 @@ class Invitacion(ModeloConFechas):
     )
 
     class Meta:
+        db_table = "invitaciones"
         ordering = ["-creado_en"]
         verbose_name = "invitación"
         verbose_name_plural = "invitaciones"
