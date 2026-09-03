@@ -375,89 +375,6 @@ cmd_psql() {
   docker compose exec db psql -U "$(leer_env POSTGRES_USER)" -d "$(leer_env POSTGRES_DB)"
 }
 
-cmd_esquema() {
-  verificar_docker
-  local salida="varios/bd/esquema_base_datos.sql"
-  local carpeta; carpeta="$(dirname "$salida")"
-  [ -d "$carpeta" ] || morir "No existe la carpeta $carpeta"
-
-  local usuario base
-  usuario="$(leer_env POSTGRES_USER)"
-  base="$(leer_env POSTGRES_DB)"
-
-  # Fuera las tablas de las apps internas de Django y sus dos puentes: el
-  # retrato es del modelo del negocio, no del andamiaje del framework.
-  set -- --schema-only --no-owner --no-privileges --no-comments --schema=public \
-         --exclude-table='auth_*' --exclude-table='django_*' \
-         --exclude-table='usuarios_grupos' --exclude-table='usuarios_permisos'
-
-  local crudo; crudo="$(mktemp)"
-  # Se borra a mano al terminar: un `trap EXIT` saltaría al salir del script,
-  # cuando esta variable local ya no existe.
-  fallo_esquema() { rm -f "$crudo"; morir "$@"; }
-
-  if usa_bd_local; then
-    requiere_arriba db
-    info "Volcando el esquema de la base local ..."
-    docker compose exec -T db pg_dump -U "$usuario" -d "$base" "$@" > "$crudo" \
-      || fallo_esquema "pg_dump falló"
-  else
-    # pg_dump tiene que ser igual o más nuevo que el servidor, y el sistema
-    # rara vez lo tiene: se usa el de la misma imagen que la base local.
-    local imagen; imagen="$(sed -nE 's/^[[:space:]]*image:[[:space:]]*(postgres:[^[:space:]]+).*/\1/p' compose.yaml | head -1)"
-    [ -n "$imagen" ] || imagen="postgres:18-alpine"
-    info "Volcando el esquema de $(leer_env POSTGRES_HOST) con $imagen ..."
-    docker run --rm -e PGPASSWORD="$(leer_env POSTGRES_PASSWORD)" "$imagen" \
-      pg_dump -h "$(leer_env POSTGRES_HOST)" -p "$(leer_env POSTGRES_PORT)" \
-              -U "$usuario" -d "$base" "$@" > "$crudo" || fallo_esquema "pg_dump falló"
-  fi
-
-  grep -q "CREATE TABLE" "$crudo" || fallo_esquema "El volcado salió vacío: revisa la conexión."
-
-  # Encabezado propio + volcado sin las líneas que cambian con cada versión de
-  # pg_dump (ensucian el diff en git sin decir nada del esquema).
-  {
-    cat <<'CABECERA'
---
--- El Tapaso — esquema real de la base de datos
---
--- ESTE ARCHIVO NO SE EDITA A MANO. Es una foto del esquema que hay ahora
--- mismo en la base de datos, generada con:
---
---     ./dev.sh esquema
---
--- El esquema lo mandan los modelos de Django y sus migraciones; este archivo
--- solo lo retrata para poder leerlo de corrido y ver los cambios en git.
--- El diseño y el porqué de cada decisión están en `diseno_base_datos.md`.
---
--- Qué NO aparece aquí: las tablas de las apps internas de Django
--- (`auth_group`, `auth_permission`, `django_migrations`, `django_session`,
--- `django_admin_log`, `django_content_type`) y las dos tablas puente hacia
--- ellas (`usuarios_grupos`, `usuarios_permisos`). Sostienen el panel de
--- administración y el sistema de permisos, no el modelo del negocio. Por eso
--- este archivo retrata el modelo, pero no sirve para levantar una base vacía:
--- para eso está `./dev.sh migrate`.
---
-
-CABECERA
-    # Se descarta la cabecera de pg_dump (ya la sustituye la de arriba) y el
-    # pie, junto con las líneas de versión, que cambiarían el diff en git cada
-    # vez que se actualice pg_dump sin que el esquema haya cambiado.
-    awk '
-      /^SET statement_timeout/ { empezado = 1 }
-      !empezado                { next }
-      /^\\(un)?restrict /      { next }
-      /^-- PostgreSQL database dump complete$/ { fin = 1; next }
-      fin                      { next }
-      { print }
-    ' "$crudo" | sed -e '$ { /^--$/d; }' 
-  } > "$salida"
-
-  local tablas; tablas="$(grep -c '^CREATE TABLE' "$salida")"
-  rm -f "$crudo"
-  ok "Esquema actualizado: $salida ($tablas tablas)"
-}
-
 cmd_test() {
   verificar_docker
   local objetivo="${1:-todo}"
@@ -505,7 +422,6 @@ Django:
   ./dev.sh shell              Shell de Django
   ./dev.sh manage <comando>   Cualquier otro comando de manage.py
   ./dev.sh psql               Consola de PostgreSQL
-  ./dev.sh esquema            Regenera varios/bd/esquema_base_datos.sql
 
 Calidad:
   ./dev.sh test [back|front]  Corre las pruebas
@@ -548,7 +464,6 @@ case "$comando" in
   shell)                cmd_shell ;;
   manage)               cmd_manage "$@" ;;
   psql)                 cmd_psql ;;
-  esquema)              cmd_esquema ;;
   test|pruebas)         cmd_test "$@" ;;
   lint)                 cmd_lint ;;
   format|formato)       cmd_format ;;
