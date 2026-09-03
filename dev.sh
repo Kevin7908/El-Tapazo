@@ -113,6 +113,30 @@ puertos_propios() {
     | grep -oE ':[0-9]+->' | grep -oE '[0-9]+' | sort -u
 }
 
+# Con qué herramienta se comprueban los puertos. Se decide una sola vez.
+#
+# Ojo con Windows: si no hay Python instalado, el sistema deja igualmente un
+# "python3" falso (el acceso directo a la Microsoft Store) que existe para
+# `command -v` pero no ejecuta nada, imprime un aviso y devuelve error. Por eso
+# no basta con que el comando exista: hay que probarlo antes de elegirlo.
+HERRAMIENTA_PUERTOS=''
+
+elegir_herramienta_puertos() {
+  [ -z "$HERRAMIENTA_PUERTOS" ] || return 0
+  if command -v ss >/dev/null 2>&1 && ss -ltn >/dev/null 2>&1; then
+    HERRAMIENTA_PUERTOS=ss
+  elif command -v lsof >/dev/null 2>&1 && lsof -v >/dev/null 2>&1; then
+    HERRAMIENTA_PUERTOS=lsof
+  elif command -v python3 >/dev/null 2>&1 && python3 -c '' >/dev/null 2>&1; then
+    HERRAMIENTA_PUERTOS=python3
+  elif command -v netstat >/dev/null 2>&1 && netstat -an >/dev/null 2>&1; then
+    HERRAMIENTA_PUERTOS=netstat   # el caso de Git Bash en Windows
+  else
+    HERRAMIENTA_PUERTOS=ninguna
+    aviso "No hay forma de comprobar los puertos aquí: los daré por libres."
+  fi
+}
+
 puerto_ocupado() {    # puerto_ocupado 8000  ->  0 si está ocupado
   local puerto="$1"
 
@@ -121,10 +145,16 @@ puerto_ocupado() {    # puerto_ocupado 8000  ->  0 si está ocupado
     return 1
   fi
 
-  if command -v ss >/dev/null 2>&1; then
-    ss -ltnH "sport = :$puerto" 2>/dev/null | grep -q . && return 0 || return 1
-  elif command -v python3 >/dev/null 2>&1; then
-    python3 - "$puerto" <<'PY' && return 1 || return 0
+  elegir_herramienta_puertos
+  case "$HERRAMIENTA_PUERTOS" in
+    ss)
+      ss -ltnH "sport = :$puerto" 2>/dev/null | grep -q . && return 0 || return 1
+      ;;
+    lsof)
+      lsof -iTCP:"$puerto" -sTCP:LISTEN -t >/dev/null 2>&1 && return 0 || return 1
+      ;;
+    python3)
+      python3 - "$puerto" 2>/dev/null <<'PY' && return 1 || return 0
 import socket, sys
 s = socket.socket()
 try:
@@ -134,11 +164,19 @@ except OSError:
 finally:
     s.close()
 PY
-  elif command -v lsof >/dev/null 2>&1; then
-    lsof -iTCP:"$puerto" -sTCP:LISTEN -t >/dev/null 2>&1 && return 0 || return 1
-  else
-    return 1   # sin herramientas para comprobar: se asume libre
-  fi
+      ;;
+    netstat)
+      # El estado ("LISTENING") viene traducido en los Windows en español, así
+      # que se mira solo la dirección local, que es igual en todos los idiomas.
+      netstat -an 2>/dev/null \
+        | awk -v p=":${puerto}$" 'tolower($1) ~ /^tcp/ && ($2 ~ p || $4 ~ p) { hallado = 1 }
+                                  END { exit !hallado }' \
+        && return 0 || return 1
+      ;;
+    *)
+      return 1   # sin herramientas para comprobar: se asume libre
+      ;;
+  esac
 }
 
 buscar_puerto_libre() {   # buscar_puerto_libre 8000 -> primer puerto libre >= 8000
