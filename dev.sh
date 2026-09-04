@@ -227,6 +227,9 @@ asignar_puertos() {
   escribir_env MAILPIT_PORT       "$MAILPIT_PORT"
   # El navegador llama a la API por el puerto publicado: deben ir sincronizados.
   escribir_env VITE_API_URL       "http://localhost:${BACKEND_PORT}/api/v1"
+  # Y los enlaces de los correos (invitación, recuperación, verificación) los
+  # abre el frontend: si el puerto cambió, tienen que apuntar al nuevo.
+  escribir_env URL_FRONTEND       "http://localhost:${FRONTEND_PORT}"
 
   if usa_bd_local; then
     ok "Puertos: base de datos $DB_PORT · backend $BACKEND_PORT · frontend $FRONTEND_PORT"
