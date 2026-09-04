@@ -16,7 +16,7 @@
 Acuerdo del equipo: **todo en español** — apps, modelos, campos, funciones,
 carpetas y documentación. Las únicas excepciones son los nombres que exige
 Django (`models.py`, `admin.py`, `apps.py`, `migrations/`, `password`,
-`last_login`, `is_superuser`). Ver [reglas 03](../../varios/reglas/03-estilo-y-nombres.md).
+`last_login`, `is_superuser`). Ver [reglas de Python y Django](../../varios/reglas/reglas-python-django.md).
 
 ---
 

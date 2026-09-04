@@ -87,7 +87,7 @@ sobre el esquema.
 **2. Cuidado con el N+1.**
 Cada consulta viaja por internet (~50-150 ms, contra ~1 ms en local). Un listado
 que dispara 100 consultas pasa de 100 ms a 10 segundos. Usa `select_related` y
-`prefetch_related` — ver [reglas 04](../../varios/reglas/04-modelos-y-datos.md).
+`prefetch_related` — ver [reglas de base de datos](../../varios/reglas/reglas-base-de-datos.md).
 
 **3. La contraseña no se sube a git.**
 Vive solo en tu `.env` y en tu gestor de contraseñas. Si se filtra, se rota
