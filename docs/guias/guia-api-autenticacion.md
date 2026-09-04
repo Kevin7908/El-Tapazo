@@ -420,6 +420,9 @@ enlace:
 ./dev.sh logs backend
 ```
 
+Cómo disparar cada correo y comprobar que el token funciona está en la
+[guía para probar los correos](guia-probar-los-correos.md).
+
 ---
 
 # 6. Cómo montarlo en React

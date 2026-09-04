@@ -14,6 +14,7 @@ Cómo trabajar en el proyecto.
 | [guia-docker.md](guias/guia-docker.md) | Cómo está armado el entorno de contenedores y cómo resolver problemas. |
 | [guia-flujo-git.md](guias/guia-flujo-git.md) | Ramas, commits y pull requests. |
 | [guia-api-autenticacion.md](guias/guia-api-autenticacion.md) | **Para el frontend:** cómo conectarse a la API — acceso, invitaciones, contraseñas y errores. |
+| [guia-probar-los-correos.md](guias/guia-probar-los-correos.md) | Probar invitaciones, recuperación y verificación leyendo el correo en los logs, sin enviar nada. |
 
 ## Backend (`docs/backend/`)
 

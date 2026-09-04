@@ -138,6 +138,10 @@ probar los flujos.
 Busca el bloque que empieza por `Content-Type: text/plain` y copia la URL que
 aparece dentro.
 
+> Ojo: si disparaste el correo con `./dev.sh manage <comando>`, sale en la
+> salida de **ese** comando y no en los logs. Eso y cómo comprobar que el token
+> funciona está en la [guía para probar los correos](guia-probar-los-correos.md).
+
 ### Si necesitas enviarlos de verdad
 
 Solo hace falta para probar la entrega real. Consigue credenciales SMTP —Brevo
