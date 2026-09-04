@@ -127,20 +127,18 @@ hay registro público, y nadie más vuelve a necesitar el superusuario.
 El sistema manda tres correos: la invitación, la recuperación de contraseña y
 la verificación del correo.
 
-**No tienes que configurar nada.** Por defecto no se envían: se imprimen en los
-logs del backend con el enlace completo, que es lo único que necesitas para
-probar los flujos.
+**No tienes que configurar nada.** En desarrollo ninguno sale a internet: todos
+caen en una bandeja de entrada de mentira que corre en tu máquina.
 
 ```bash
-./dev.sh logs backend
+./dev.sh correos
 ```
 
-Busca el bloque que empieza por `Content-Type: text/plain` y copia la URL que
-aparece dentro.
+Se abre en <http://localhost:8025> y ahí está el correo con su enlace clicable.
+La bandeja se levanta sola con `./dev.sh up`, es un contenedor más.
 
-> Ojo: si disparaste el correo con `./dev.sh manage <comando>`, sale en la
-> salida de **ese** comando y no en los logs. Eso y cómo comprobar que el token
-> funciona está en la [guía para probar los correos](guia-probar-los-correos.md).
+Cómo disparar cada correo y qué comprobar está en la
+[guía para probar los correos](guia-probar-los-correos.md).
 
 ### Si necesitas enviarlos de verdad
 

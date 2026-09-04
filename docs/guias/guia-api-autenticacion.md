@@ -413,14 +413,14 @@ detrás de `RutaProtegida`.
 La base de esos enlaces la fija la variable `URL_FRONTEND` del `.env` del
 backend. En desarrollo es `http://localhost:5173`.
 
-**En desarrollo el correo no se envía: se imprime en los logs.** Para ver el
-enlace:
+**En desarrollo el correo no sale a internet: cae en una bandeja de entrada de
+mentira que corre en tu máquina.** Para verlo, con el enlace ya clicable:
 
 ```bash
-./dev.sh logs backend
+./dev.sh correos     # abre http://localhost:8025
 ```
 
-Cómo disparar cada correo y comprobar que el token funciona está en la
+Cómo disparar cada correo y qué comprobar está en la
 [guía para probar los correos](guia-probar-los-correos.md).
 
 ---

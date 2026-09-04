@@ -36,6 +36,19 @@ services:
     networks:
       - tapaso_net
 
+  # Buzón de pruebas: recibe TODO el correo que manda el backend en desarrollo
+  # y lo muestra en una bandeja de entrada web. No sale nada a internet, no
+  # gasta cupo de ningún proveedor y no hace falta ninguna credencial.
+  mailpit:
+    image: axllent/mailpit:v1.31
+    container_name: tapaso_mailpit
+    restart: unless-stopped
+    command: ["--smtp-auth-accept-any", "--smtp-auth-allow-insecure", "--max", "200"]
+    ports:
+      - "${MAILPIT_PORT:-8025}:8025"   # bandeja de entrada web
+    networks:
+      - tapaso_net
+
   backend:
     build:
       context: ./apps/backend-django
@@ -55,12 +68,13 @@ services:
       POSTGRES_HOST: ${POSTGRES_HOST:-db}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
       CORS_ALLOWED_ORIGINS: http://localhost:5173
-      # Correo: por defecto se imprime en los logs. Para enviarlo de verdad,
-      # pon las credenciales del proveedor en el .env (ver .env.example).
-      EMAIL_BACKEND: ${EMAIL_BACKEND:-django.core.mail.backends.console.EmailBackend}
-      EMAIL_HOST: ${EMAIL_HOST:-}
-      EMAIL_PORT: ${EMAIL_PORT:-587}
-      EMAIL_USE_TLS: ${EMAIL_USE_TLS:-True}
+      # Correo: por defecto va a Mailpit, la bandeja de pruebas de aquí al lado.
+      # Para enviarlo de verdad, pon las credenciales del proveedor en el .env
+      # (ver .env.example); lo del .env manda sobre estos valores.
+      EMAIL_BACKEND: ${EMAIL_BACKEND:-django.core.mail.backends.smtp.EmailBackend}
+      EMAIL_HOST: ${EMAIL_HOST:-mailpit}
+      EMAIL_PORT: ${EMAIL_PORT:-1025}
+      EMAIL_USE_TLS: ${EMAIL_USE_TLS:-False}
       EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
       EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
       DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-El Tapaso <no-responder@el-tapaso.com>}
@@ -79,6 +93,8 @@ services:
         condition: service_healthy
         # Con Supabase el servicio "db" no existe; no debe ser un requisito.
         required: false
+      mailpit:
+        condition: service_started
     networks:
       - tapaso_net
 

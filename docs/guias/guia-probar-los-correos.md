@@ -1,119 +1,87 @@
-# Guía: probar los correos sin enviar ninguno
+# Guía: probar los correos
 
 El sistema manda tres correos —la **invitación**, la **recuperación de
-contraseña** y la **verificación del correo**—, y los tres llevan dentro un
-enlace con un token. Esta guía es para comprobar que ese enlace se genera bien
-y que el token funciona, **sin configurar nada y sin gastar cupo de envío**.
+contraseña** y la **verificación del correo**—, y los tres llevan un enlace con
+un token dentro.
 
-> **No necesitas credenciales de correo.** En desarrollo el correo no se envía:
-> se imprime completo, con el enlace listo para copiar. Es más rápido que abrir
-> un buzón y no depende de que un proveedor esté de buenas.
+En desarrollo **no se envía ninguno de verdad**: todos caen en una bandeja de
+entrada de mentira que corre en tu máquina. No hace falta ninguna credencial,
+no gasta cupo de ningún proveedor y funciona sin internet.
+
+```bash
+./dev.sh correos
+```
+
+Eso abre <http://localhost:8025>. Ahí está todo el correo que manda el backend,
+con su asunto, su destinatario y **el enlace clicable**.
+
+---
+
+El circuito real es este:
+
+1. El usuario escribe su correo en "olvidé mi contraseña"  →  POST a la API  →  202
+2. En la pestaña de la bandeja aparece el correo, solo, sin recargar
+3. HACE CLIC en el enlace del correo
+        ↓
+4. El navegador abre  localhost:5173/nueva-contrasena?uid=Mg&token=dee4p4-...
+        ↓
+5. Esa pantalla del frontend lee uid y token de la URL (useSearchParams),
+   los mete en el formulario de "contraseña nueva" y hace
+   POST /contrasena/restablecimiento/  con  {uid, token, contrasena}
+        ↓
+6. 204  →  a iniciar sesión
 
 ---
 
 ## Índice
 
-1. [Dónde sale el correo](#1-dónde-sale-el-correo)
-2. [Cómo sacar el enlace](#2-cómo-sacar-el-enlace)
-3. [Los tres correos: cómo disparar cada uno](#3-los-tres-correos-cómo-disparar-cada-uno)
-4. [Comprobar que el token funciona](#4-comprobar-que-el-token-funciona)
-5. [Las cuatro comprobaciones que importan](#5-las-cuatro-comprobaciones-que-importan)
-6. [Problemas frecuentes](#6-problemas-frecuentes)
-7. [Si de verdad necesitas enviar correos](#7-si-de-verdad-necesitas-enviar-correos)
+1. [Cómo se prueba un flujo, de principio a fin](#1-cómo-se-prueba-un-flujo-de-principio-a-fin)
+2. [Cómo disparar cada correo](#2-cómo-disparar-cada-correo)
+3. [Probar el token sin las pantallas del frontend](#3-probar-el-token-sin-las-pantallas-del-frontend)
+4. [Las cuatro comprobaciones que importan](#4-las-cuatro-comprobaciones-que-importan)
+5. [Problemas frecuentes](#5-problemas-frecuentes)
+6. [Si de verdad necesitas enviar correos](#6-si-de-verdad-necesitas-enviar-correos)
 
 ---
 
-# 1. Dónde sale el correo
+# 1. Cómo se prueba un flujo, de principio a fin
 
-Esto es lo que más confunde al principio: **el correo aparece en un sitio
-distinto según cómo lo dispares.** No es un error, es cómo funciona la salida
-por consola.
+Con la bandeja abierta al lado, son tres pasos:
 
-| Cómo lo disparaste | Dónde aparece el correo |
-| --- | --- |
-| Alguien usó la aplicación, o llamaste a la API | En los **logs del servidor**: `./dev.sh logs backend` |
-| Lo lanzaste con `./dev.sh manage <comando>` | En la **salida de ese mismo comando**, ahí en tu terminal |
+1. **Abre la bandeja:** `./dev.sh correos`
+2. **Dispara la acción** en la aplicación (invitar a alguien, pedir recuperar
+   la contraseña…). El correo aparece **solo**, sin recargar.
+3. **Haz clic en el enlace** del correo. Te lleva al frontend, que lee el token
+   y llama a la API.
 
-El motivo: `./dev.sh manage` arranca un proceso aparte, así que lo que imprime
-sale por tu terminal, no por el log del servidor que está corriendo.
+Eso es todo. No hay que leer logs ni copiar nada a mano.
 
-## Ver los logs
+La bandeja además te deja ver la versión en texto y la versión HTML, revisar
+las cabeceras y borrar todo con un botón para empezar limpio.
 
-```bash
-./dev.sh logs backend
-```
-
-Esto se queda **enganchado en vivo** (`Ctrl+C` para salir), que es justo lo que
-quieres cuando vas a hacer clic en algo y ver el correo aparecer.
-
-Para mirar hacia atrás, lo que ya pasó:
-
-```bash
-docker compose logs backend --tail 80
-```
+> **La bandeja se levanta sola** con `./dev.sh up`, junto al backend y el
+> frontend. Es un contenedor más (`tapaso_mailpit`), y `./dev.sh status` te dice
+> en qué puerto quedó si el 8025 estaba ocupado.
 
 ---
 
-# 2. Cómo sacar el enlace
+# 2. Cómo disparar cada correo
 
-Un correo se ve así en la consola. Empieza por las cabeceras y va entre dos
-líneas de guiones:
-
-```
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Te invitaron a Bar El Tapaso en El Tapaso
-From: El Tapaso <no-responder@el-tapaso.com>
-To: luis@bar.com
-Date: Fri, 04 Sep 2026 22:02:32 -0000
-
-Hola,
-
-Te invitaron a trabajar en Bar El Tapaso como Mesero.
-
-Para entrar tienes que crear tu contraseña. Abre este enlace:
-
-http://localhost:5173/invitacion?token=Q2WmCri9jDIteBNu6MAVe2dapVpo2HI8Y51_V-QIavY
-
-El enlace vence el 11 de Septiembre de 2026 a las 17:02. Si se te pasa, pídele al administrador
-que te envíe otro.
--------------------------------------------------------------------------------
-```
-
-Copia la URL y pégala en el navegador. Apunta al **frontend**
-(`localhost:5173`), no a la API: esas pantallas las pinta React.
-
-## El atajo
-
-Si no quieres leer el bloque entero, este comando te deja el último enlace que
-se generó:
-
-```bash
-docker compose logs backend --tail 200 | grep -o 'http://localhost:5173/[^ ]*' | tail -1
-```
-
----
-
-# 3. Los tres correos: cómo disparar cada uno
-
-Los ejemplos usan el puerto **8000**, que es el de `.env.example`. Si cambiaste
-`BACKEND_PORT` en tu `.env`, usa el tuyo.
+Los ejemplos usan el puerto **8000**, el de `.env.example`. Si `./dev.sh up` te
+asignó otro, usa el tuyo (`./dev.sh ports` te lo dice).
 
 ## Invitación
 
 Es el correo con el que nace toda cuenta: **no hay registro público**.
 
-**Al primer administrador de un negocio** lo invita el staff desde la terminal
-(el `--negocio` es el id que ves en la URL del admin de Django):
+Al **primer administrador de un negocio** lo invita el staff desde la terminal.
+El `--negocio` es el id que ves en la URL del admin de Django:
 
 ```bash
 ./dev.sh manage invitar_administrador --negocio 1 --correo ana@bar.com
 ```
 
-👉 El correo sale **en la salida de ese comando**, no en los logs.
-
-**A los demás** los invita ese administrador desde la aplicación, o con la API:
+A **los demás** los invita ese administrador desde la aplicación, o con la API:
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/usuarios/invitaciones/ \
@@ -121,8 +89,6 @@ curl -X POST http://localhost:8000/api/v1/usuarios/invitaciones/ \
   -H "Content-Type: application/json" \
   -d '{"correo": "luis@bar.com", "rol": "mesero"}'
 ```
-
-👉 Aquí sí: el correo sale **en los logs del backend**.
 
 ## Recuperación de contraseña
 
@@ -134,7 +100,7 @@ curl -X POST http://localhost:8000/api/v1/usuarios/contrasena/recuperacion/ \
 
 Responde **202** siempre, exista o no ese correo. No es un descuido: si
 contestara distinto, cualquiera podría averiguar quién tiene cuenta probando
-correos uno por uno. Para saber si de verdad salió, mira los logs.
+correos uno por uno. Para saber si de verdad salió, mira la bandeja.
 
 ## Verificación del correo
 
@@ -152,25 +118,26 @@ También responde **202** siempre, por lo mismo.
 
 ---
 
-# 4. Comprobar que el token funciona
+# 3. Probar el token sin las pantallas del frontend
 
 Mientras el frontend no tenga las pantallas `/invitacion`,
-`/nueva-contrasena` y `/verificar-correo`, el enlace que copias no lleva a
-ninguna parte. Puedes probar el token igual, llamando a la API directamente.
+`/nueva-contrasena` y `/verificar-correo`, el enlace del correo no lleva a
+ninguna parte. Puedes probar el token igual, llamando a la API a mano: copia el
+enlace desde la bandeja y saca los parámetros.
 
 ## Aceptar una invitación
 
 El enlace trae un solo parámetro, `token`:
 
 ```
-http://localhost:5173/invitacion?token=Q2WmCri9jDIteBNu...
+http://localhost:5173/invitacion?token=B8jVsIRrpRsHErt2SloHrXbc1Gp5ziVL...
 ```
 
-Primero, mirar de qué es la invitación (esto es lo que la pantalla usará para
-decir "te invitaron a X como mesero"):
+Primero, ver de qué es (esto es lo que la pantalla usará para decir "te
+invitaron a X como mesero"):
 
 ```bash
-curl "http://localhost:8000/api/v1/usuarios/invitaciones/pendiente/?token=Q2WmCri9jDIteBNu..."
+curl "http://localhost:8000/api/v1/usuarios/invitaciones/pendiente/?token=B8jVsIRrpRsHErt2..."
 ```
 
 ```json
@@ -183,7 +150,7 @@ Y aceptarla:
 curl -X POST http://localhost:8000/api/v1/usuarios/invitaciones/aceptacion/ \
   -H "Content-Type: application/json" \
   -d '{
-    "token": "Q2WmCri9jDIteBNu...",
+    "token": "B8jVsIRrpRsHErt2...",
     "nombre": "Luis",
     "apellido": "Pérez",
     "telefono": "3001234567",
@@ -191,7 +158,7 @@ curl -X POST http://localhost:8000/api/v1/usuarios/invitaciones/aceptacion/ \
   }'
 ```
 
-**201** y devuelve la sesión ya abierta: `acceso`, `refresco` y el `usuario`.
+**201**, y devuelve la sesión ya abierta: `acceso`, `refresco` y el `usuario`.
 No hay que volver a iniciar sesión.
 
 ## Restablecer la contraseña
@@ -208,7 +175,7 @@ curl -X POST http://localhost:8000/api/v1/usuarios/contrasena/restablecimiento/ 
   -d '{"uid": "Mg", "token": "dee4p4-3781ec3bca94...", "contrasena": "Nueva.Clave.Tapaso.2026"}'
 ```
 
-**204** y a iniciar sesión con la nueva.
+**204**, y a iniciar sesión con la nueva.
 
 ## Verificar el correo
 
@@ -222,38 +189,28 @@ curl -X POST http://localhost:8000/api/v1/usuarios/verificacion-correo/confirmac
 
 **204**, y a partir de ahí esa cuenta ya puede iniciar sesión.
 
-## Sacar `uid` y `token` sin copiarlos a mano
-
-```bash
-ENLACE=$(docker compose logs backend --tail 200 | grep -o 'http://localhost:5173/[^ ]*' | tail -1)
-UID_=$(echo "$ENLACE" | sed -n 's/.*uid=\([^&]*\).*/\1/p')
-TOK=$(echo "$ENLACE"  | sed -n 's/.*token=\(.*\)/\1/p')
-echo "uid=$UID_  token=$TOK"
-```
-
 ---
 
-# 5. Las cuatro comprobaciones que importan
+# 4. Las cuatro comprobaciones que importan
 
 Si vas a dar por bueno el flujo, comprueba estas cuatro cosas. Las tres
-primeras son las que se rompen en silencio.
+primeras se rompen en silencio.
 
 **1. El enlace está entero.** Tiene que verse `&token=`, nunca `&amp;token=`.
-Si aparece escapado, el frontend leería un parámetro llamado `amp;token` y
-nunca encontraría el token. (Pasó una vez; hay una prueba que lo vigila.)
+Si sale escapado, el frontend leería un parámetro llamado `amp;token` y nunca
+encontraría el token. (Pasó una vez; hay una prueba que lo vigila.)
 
 **2. El enlace sirve UNA sola vez.** Usa el mismo dos veces seguidas: la
-segunda tiene que fallar.
+segunda tiene que fallar con `HTTP 400` y
 
 ```json
 {"error":{"codigo":"enlace_invalido","mensaje":"El enlace no es válido o ya venció. Solicita uno nuevo."}}
 ```
 
-Con `HTTP 400`. Si la segunda vez funciona, hay un problema serio.
+Si la segunda vez funciona, hay un problema serio.
 
 **3. Un token no sirve para otra cosa.** El de recuperación no verifica el
-correo, y al revés: los dos tienen firma distinta. Los dos casos dan
-`enlace_invalido`.
+correo, y al revés: tienen firma distinta. Los dos casos dan `enlace_invalido`.
 
 **4. El rol lo pone quien invita.** Manda `"rol": "admin"` en el cuerpo de
 `invitaciones/aceptacion/` y comprueba que el usuario creado **no** es
@@ -262,24 +219,45 @@ elegir su propio rol, cualquier invitado se haría administrador.
 
 ---
 
-# 6. Problemas frecuentes
+# 5. Problemas frecuentes
 
 | Lo que ves | Qué pasa |
 | --- | --- |
-| No aparece ningún correo en los logs | Lo lanzaste con `./dev.sh manage`: sale en la salida de ese comando, no en los logs. Ver [§1](#1-dónde-sale-el-correo) |
-| `./dev.sh logs backend` se queda quieto | Es normal: sigue el log en vivo. Dispara la acción en otra terminal, o sal con `Ctrl+C` |
-| La recuperación responde 202 pero no llega nada | Ese correo no tiene cuenta, o la cuenta está desactivada. Responde 202 igual, a propósito |
-| `enlace_invalido` la primera vez | Copiaste el enlace cortado. Ojo con `uid` y `token`: son **dos** parámetros separados por `&` |
-| `correo_no_verificado` al iniciar sesión | La cuenta existe y la contraseña está bien, pero falta abrir el enlace de verificación. Ver [§3](#3-los-tres-correos-cómo-disparar-cada-uno) |
+| La bandeja no abre en `localhost:8025` | El puerto estaba ocupado y `./dev.sh up` asignó otro. Míralo con `./dev.sh correos` o `./dev.sh status` |
+| La bandeja está vacía | El contenedor `tapaso_mailpit` no está arriba (`./dev.sh status`), o tu `.env` tiene credenciales SMTP de verdad y el correo salió a internet. Ver [§6](#6-si-de-verdad-necesitas-enviar-correos) |
+| La recuperación responde 202 y no llega nada | Ese correo no tiene cuenta, o está desactivada. Responde 202 igual, a propósito |
+| `enlace_invalido` la primera vez | Copiaste el enlace cortado. Ojo: `uid` y `token` son **dos** parámetros separados por `&` |
+| `correo_no_verificado` al iniciar sesión | La cuenta existe y la contraseña está bien, pero falta abrir el enlace de verificación. Ver [§2](#2-cómo-disparar-cada-correo) |
 | `demasiadas_peticiones` (429) | El freno contra fuerza bruta: 10 intentos de acceso por minuto y 5 correos por hora, por IP. Espera un rato |
 | `invitacion_pendiente_duplicada` | Ya hay una invitación sin usar para ese correo. Cancélala o reenvíala desde la aplicación |
 
+## Si prefieres no usar la bandeja
+
+Se puede volver a la salida por consola, donde el correo se imprime como texto.
+En tu `.env`:
+
+```bash
+EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+```
+
+Y entonces el correo aparece en los logs… **con una trampa**: sale en los logs
+del servidor si lo disparó una petición HTTP, pero en la salida del propio
+comando si lo lanzaste con `./dev.sh manage`, porque ese es otro proceso.
+
+```bash
+./dev.sh logs backend                          # en vivo (Ctrl+C para salir)
+docker compose logs backend --tail 80          # lo que ya pasó
+```
+
+Justamente por esa trampa existe la bandeja.
+
 ---
 
-# 7. Si de verdad necesitas enviar correos
+# 6. Si de verdad necesitas enviar correos
 
 Solo hace falta para comprobar la entrega real: que llegue a la bandeja de
-entrada y no a la carpeta de spam. Para todo lo demás, la consola alcanza.
+entrada de alguien y no a la carpeta de spam. Para todo lo demás, Mailpit
+alcanza y sobra.
 
 Dos avisos antes de pedir la clave del proyecto:
 
@@ -293,6 +271,9 @@ Dos avisos antes de pedir la clave del proyecto:
 Los pasos y el `.env` están en la
 [guía de instalación, §5](guia-instalacion.md#5-el-correo-en-desarrollo),
 incluido el detalle del host de Brevo que no coincide con lo que dice su panel.
+
+En cuanto pongas credenciales SMTP en tu `.env`, el correo **deja de llegar a la
+bandeja** y sale a internet de verdad. Coméntalas para volver.
 
 ---
 

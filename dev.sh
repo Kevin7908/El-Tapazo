@@ -22,6 +22,7 @@ ENV_EXAMPLE="$PROJECT_DIR/.env.example"
 DEFAULT_DB_PORT=5432
 DEFAULT_BACKEND_PORT=8000
 DEFAULT_FRONTEND_PORT=5173
+DEFAULT_MAILPIT_PORT=8025
 MAX_INTENTOS=100
 
 # ------------------------------- colores ----------------------------------- #
@@ -192,10 +193,11 @@ buscar_puerto_libre() {   # buscar_puerto_libre 8000 -> primer puerto libre >= 8
 asignar_puertos() {
   PUERTOS_PROPIOS="$(puertos_propios || true)"
 
-  local db_deseado backend_deseado frontend_deseado
+  local db_deseado backend_deseado frontend_deseado mailpit_deseado
   db_deseado="$(leer_env POSTGRES_PORT_HOST)";  db_deseado="${db_deseado:-$DEFAULT_DB_PORT}"
   backend_deseado="$(leer_env BACKEND_PORT)";   backend_deseado="${backend_deseado:-$DEFAULT_BACKEND_PORT}"
   frontend_deseado="$(leer_env FRONTEND_PORT)"; frontend_deseado="${frontend_deseado:-$DEFAULT_FRONTEND_PORT}"
+  mailpit_deseado="$(leer_env MAILPIT_PORT)";   mailpit_deseado="${mailpit_deseado:-$DEFAULT_MAILPIT_PORT}"
 
   if usa_bd_local; then
     DB_PORT="$(buscar_puerto_libre "$db_deseado")"
@@ -208,14 +210,21 @@ asignar_puertos() {
   while [ "$FRONTEND_PORT" = "$BACKEND_PORT" ]; do
     FRONTEND_PORT="$(buscar_puerto_libre $((FRONTEND_PORT + 1)))"
   done
+  # Y el buzón de pruebas no puede chocar con ninguno de los dos.
+  MAILPIT_PORT="$(buscar_puerto_libre "$mailpit_deseado")"
+  while [ "$MAILPIT_PORT" = "$BACKEND_PORT" ] || [ "$MAILPIT_PORT" = "$FRONTEND_PORT" ]; do
+    MAILPIT_PORT="$(buscar_puerto_libre $((MAILPIT_PORT + 1)))"
+  done
 
   [ "$DB_PORT" = "$db_deseado" ]             || aviso "Puerto $db_deseado ocupado -> base de datos en $DB_PORT"
   [ "$BACKEND_PORT" = "$backend_deseado" ]   || aviso "Puerto $backend_deseado ocupado -> backend en $BACKEND_PORT"
   [ "$FRONTEND_PORT" = "$frontend_deseado" ] || aviso "Puerto $frontend_deseado ocupado -> frontend en $FRONTEND_PORT"
+  [ "$MAILPIT_PORT" = "$mailpit_deseado" ]   || aviso "Puerto $mailpit_deseado ocupado -> buzón de correo en $MAILPIT_PORT"
 
   usa_bd_local && escribir_env POSTGRES_PORT_HOST "$DB_PORT"
   escribir_env BACKEND_PORT       "$BACKEND_PORT"
   escribir_env FRONTEND_PORT      "$FRONTEND_PORT"
+  escribir_env MAILPIT_PORT       "$MAILPIT_PORT"
   # El navegador llama a la API por el puerto publicado: deben ir sincronizados.
   escribir_env VITE_API_URL       "http://localhost:${BACKEND_PORT}/api/v1"
 
@@ -238,15 +247,17 @@ esperar_servicio() {   # esperar_servicio URL SEGUNDOS
 }
 
 mostrar_urls() {
-  local db backend frontend
+  local db backend frontend mailpit
   db="$(leer_env POSTGRES_PORT_HOST)"
   backend="$(leer_env BACKEND_PORT)"
   frontend="$(leer_env FRONTEND_PORT)"
+  mailpit="$(leer_env MAILPIT_PORT)"; mailpit="${mailpit:-$DEFAULT_MAILPIT_PORT}"
   printf "\n${NEGRITA}El Tapaso está arriba:${FIN}\n\n"
   printf "  Frontend .............. http://localhost:%s\n" "$frontend"
   printf "  API ................... http://localhost:%s/api/v1/\n" "$backend"
   printf "  Documentación API ..... http://localhost:%s/api/docs/\n" "$backend"
   printf "  Admin de Django ....... http://localhost:%s/admin/\n" "$backend"
+  printf "  Correos de prueba ..... http://localhost:%s\n" "$mailpit"
   printf "  Base de datos ......... %s\n\n" "$(descripcion_bd)"
   printf "  Logs:   ./dev.sh logs        Apagar:  ./dev.sh down\n\n"
 }
@@ -412,6 +423,7 @@ dev.sh — entorno Docker de El Tapaso (elige puertos libres automáticamente)
   ./dev.sh status             Estado de los servicios y sus URLs
   ./dev.sh logs [servicio]    Logs en vivo (Ctrl+C para salir)
   ./dev.sh ports              Muestra los puertos asignados
+  ./dev.sh correos            Abre la bandeja donde llegan los correos de prueba
   ./dev.sh clean              Borra contenedores Y base de datos (pide confirmación)
 
 Django:
@@ -455,6 +467,7 @@ case "$comando" in
   restart|reiniciar)    cmd_restart "$@" ;;
   status|ps|estado)     cmd_status ;;
   logs)                 cmd_logs "$@" ;;
+  correos|correo)       cmd_correos ;;
   clean|limpiar)        cmd_clean ;;
   ports|puertos)        cmd_ports ;;
   migrate)              cmd_migrate "$@" ;;
