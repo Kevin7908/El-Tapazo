@@ -3,7 +3,7 @@ Correo de texto plano. El autoescape de Django convertiría el & de las URLs en
 &amp; y el enlace llegaría roto; en HTML eso está bien, aquí no.
 {% endcomment %}Hola,
 
-{{ invitada_por }} te invitó a trabajar en {{ negocio }} como {{ rol }}.
+{% if invitada_por %}{{ invitada_por }} te invitó{% else %}Te invitaron{% endif %} a trabajar en {{ negocio }} como {{ rol }}.
 
 Para entrar tienes que crear tu contraseña. Abre este enlace:
 

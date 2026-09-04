@@ -473,3 +473,18 @@ def test_el_correo_de_invitacion_no_lleva_plantilla_sin_renderizar():
     assert "{{" not in cuerpo and "{%" not in cuerpo
     assert invitacion.negocio.nombre_comercial in cuerpo
     assert cuerpo.startswith("Hola")
+
+
+def test_el_correo_de_invitacion_se_entiende_aunque_quien_invita_no_tenga_nombre():
+    """Regresión: el staff de plataforma puede no tener nombre cargado.
+
+    El correo empezaba con un hueco: « te invitó a trabajar en...».
+    """
+    quien_invita = FabricaDeAdministrador(nombre="", apellido="")
+    invitacion = FabricaDeInvitacion(creada_por=quien_invita)
+
+    correos.enviar_invitacion(invitacion=invitacion, token=invitacion.token_en_claro)
+
+    cuerpo = mail.outbox[0].body
+    assert "Te invitaron a trabajar en" in cuerpo
+    assert not any(linea.startswith(" te invitó") for linea in cuerpo.splitlines())
