@@ -4,6 +4,7 @@ Los valores sensibles se leen de variables de entorno (archivo .env).
 No poner credenciales reales en este archivo.
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -41,6 +42,9 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "django_filters",
     "drf_spectacular",
+    # Guarda los refresh anulados al cerrar sesión. Sus tablas empiezan por
+    # `token_blacklist_` y, como las de `auth_` y `django_`, no son nuestras.
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 LOCAL_APPS = [
@@ -105,6 +109,16 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Identidad propia: el correo es el nombre de usuario (ver usuarios/models.py).
 AUTH_USER_MODEL = "usuarios.Usuario"
 
+# `AllowAllUsers...` deja que la comprobación de la contraseña ocurra incluso si
+# el usuario está inactivo o sin verificar. No es un descuido: así el servicio de
+# inicio de sesión solo revela el estado de la cuenta DESPUÉS de acertar la
+# contraseña, y nadie puede averiguar qué correos existen probando el formulario.
+AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.AllowAllUsersModelBackend"]
+
+# Vigencia de los enlaces de recuperación de contraseña y de verificación de
+# correo. Django lo usa para firmar y comprobar esos tokens.
+PASSWORD_RESET_TIMEOUT = env.int("VIGENCIA_ENLACES_HORAS", default=24) * 60 * 60
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -134,7 +148,10 @@ MEDIA_ROOT = BASE_DIR / "media"
 # DRF
 # --------------------------------------------------------------------------- #
 REST_FRAMEWORK = {
+    # JWT para el frontend. La de sesión se queda para poder probar los
+    # endpoints desde /api/docs/ estando logueado en el admin.
     "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
@@ -142,6 +159,15 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Todos los errores salen con la misma forma (ver nucleo/excepciones/).
+    "EXCEPTION_HANDLER": "nucleo.excepciones.manejador_de_excepciones",
+    # Freno a la fuerza bruta en los endpoints públicos. Cada uno declara su
+    # `throttle_scope`; lo que no lo declara no se limita.
+    "DEFAULT_THROTTLE_CLASSES": ("rest_framework.throttling.ScopedRateThrottle",),
+    "DEFAULT_THROTTLE_RATES": {
+        "inicio_sesion": env("LIMITE_INICIO_SESION", default="10/min"),
+        "correos_salientes": env("LIMITE_CORREOS_SALIENTES", default="5/hour"),
+    },
 }
 
 SPECTACULAR_SETTINGS = {
@@ -152,3 +178,43 @@ SPECTACULAR_SETTINGS = {
 }
 
 CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS")
+
+
+SIMPLE_JWT = {
+    # Corto a propósito: si roban el access, caduca solo en 15 minutos.
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=env.int("MINUTOS_TOKEN_ACCESO", default=15)),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=env.int("DIAS_TOKEN_REFRESCO", default=7)),
+    # Cada renovación entrega un refresh nuevo y anula el anterior: si alguien
+    # copió uno, deja de servir en cuanto la persona legítima lo usa.
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "SIGNING_KEY": SECRET_KEY,
+}
+
+# --------------------------------------------------------------------------- #
+# Correo
+#
+# El proveedor da igual (Brevo, Resend, Gmail…): todos hablan SMTP y todos se
+# configuran con estas mismas variables en el .env. Cambiar de proveedor es
+# cambiar el .env, no el código.
+# --------------------------------------------------------------------------- #
+EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+EMAIL_HOST = env("EMAIL_HOST", default="")
+EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", default=10)
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="El Tapaso <no-responder@el-tapaso.com>")
+
+# --------------------------------------------------------------------------- #
+# Enlaces que se mandan por correo
+#
+# El backend no sirve esas pantallas: las pinta el frontend. Aquí solo se arma
+# la URL, así que si el frontend cambia de dominio se cambia esta variable.
+# --------------------------------------------------------------------------- #
+URL_FRONTEND = env("URL_FRONTEND", default="http://localhost:5173")
+
+# Cuánto dura una invitación antes de vencerse.
+VIGENCIA_INVITACION_DIAS = env.int("VIGENCIA_INVITACION_DIAS", default=7)

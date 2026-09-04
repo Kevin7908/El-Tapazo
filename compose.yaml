@@ -55,6 +55,21 @@ services:
       POSTGRES_HOST: ${POSTGRES_HOST:-db}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
       CORS_ALLOWED_ORIGINS: http://localhost:5173
+      # Correo: por defecto se imprime en los logs. Para enviarlo de verdad,
+      # pon las credenciales del proveedor en el .env (ver .env.example).
+      EMAIL_BACKEND: ${EMAIL_BACKEND:-django.core.mail.backends.console.EmailBackend}
+      EMAIL_HOST: ${EMAIL_HOST:-}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USE_TLS: ${EMAIL_USE_TLS:-True}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-El Tapaso <no-responder@el-tapaso.com>}
+      # Base de los enlaces que viajan en esos correos: los abre el frontend.
+      URL_FRONTEND: ${URL_FRONTEND:-http://localhost:5173}
+      VIGENCIA_ENLACES_HORAS: ${VIGENCIA_ENLACES_HORAS:-24}
+      VIGENCIA_INVITACION_DIAS: ${VIGENCIA_INVITACION_DIAS:-7}
+      MINUTOS_TOKEN_ACCESO: ${MINUTOS_TOKEN_ACCESO:-15}
+      DIAS_TOKEN_REFRESCO: ${DIAS_TOKEN_REFRESCO:-7}
     volumes:
       - ./apps/backend-django:/app
     ports:
