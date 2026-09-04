@@ -106,9 +106,65 @@ docker compose exec backend python manage.py createsuperuser
 
 Con ese usuario entras a http://localhost:8000/admin/.
 
+Ese es el **staff de la plataforma**: no pertenece a ningún negocio, y es
+quien los da de alta. Para poder usar la aplicación de verdad hace falta un
+negocio y su primer administrador:
+
+```bash
+# 1. Crea el negocio en http://localhost:8000/admin/negocios/negocio/
+# 2. Invita a su administrador (el id del negocio sale de la URL del admin):
+./dev.sh manage invitar_administrador --negocio 1 --correo ana@bar.com
+```
+
+Le llega un correo con un enlace para que **elija su propia contraseña**. A
+partir de ahí, ese administrador invita a su equipo desde la aplicación: no
+hay registro público, y nadie más vuelve a necesitar el superusuario.
+
 ---
 
-## 5. Levantar solo una parte
+## 5. El correo en desarrollo
+
+El sistema manda tres correos: la invitación, la recuperación de contraseña y
+la verificación del correo.
+
+**No tienes que configurar nada.** Por defecto no se envían: se imprimen en los
+logs del backend con el enlace completo, que es lo único que necesitas para
+probar los flujos.
+
+```bash
+./dev.sh logs backend
+```
+
+Busca el bloque que empieza por `Content-Type: text/plain` y copia la URL que
+aparece dentro.
+
+### Si necesitas enviarlos de verdad
+
+Solo hace falta para probar la entrega real. Consigue credenciales SMTP —Brevo
+da 300 correos al día gratis; Resend, 3.000 al mes— y ponlas en tu `.env`:
+
+```bash
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp-relay.brevo.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=...        # el "Iniciar sesión" que muestra el panel
+EMAIL_HOST_PASSWORD=...    # la clave SMTP
+DEFAULT_FROM_EMAIL=El Tapaso <un-remitente-validado@ejemplo.com>
+```
+
+Dos avisos que ahorran media tarde:
+
+- El `DEFAULT_FROM_EMAIL` tiene que ser un remitente **validado** en el panel
+  del proveedor. Si no lo está, rechaza el envío aunque las credenciales sean
+  correctas.
+- La clave SMTP es un secreto. Vive en tu `.env` y en tu gestor de
+  contraseñas: nunca en git ni en el chat del grupo.
+
+Todas estas variables están documentadas en `.env.example`.
+
+---
+
+## 6. Levantar solo una parte
 
 No siempre hace falta levantar todo.
 
@@ -120,7 +176,7 @@ No siempre hace falta levantar todo.
 
 ---
 
-## 6. Apagar
+## 7. Apagar
 
 ```bash
 ./dev.sh down     # detiene y borra los contenedores (la BD se conserva)
@@ -129,7 +185,7 @@ No siempre hace falta levantar todo.
 
 ---
 
-## 7. Verificar que quedó bien
+## 8. Verificar que quedó bien
 
 ```bash
 ./dev.sh status
