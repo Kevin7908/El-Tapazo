@@ -49,9 +49,16 @@ class GestorDeUsuarios(BaseUserManager):
         return self._crear(correo, password, **extras)
 
     def create_superuser(self, correo: str, password: str | None = None, **extras) -> "Usuario":
-        """Staff de la plataforma: administra negocios, no pertenece a ninguno."""
+        """Staff de la plataforma: administra negocios, no pertenece a ninguno.
+
+        Nace con el correo verificado porque lo crea alguien con acceso a la
+        terminal del servidor: pedirle que confirme un correo —cuando quizá
+        todavía no hay proveedor de correo configurado— no probaría nada que
+        ese acceso no pruebe ya.
+        """
         extras.setdefault("es_staff", True)
         extras.setdefault("is_superuser", True)
+        extras.setdefault("correo_verificado_en", timezone.now())
         if extras.get("es_staff") is not True:
             raise ValueError("Un superusuario debe tener es_staff=True.")
         if extras.get("is_superuser") is not True:
@@ -91,6 +98,20 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     es_staff = models.BooleanField("accede al admin de Django", default=False)
     fecha_alta = models.DateTimeField("fecha de alta", default=timezone.now)
 
+    # Se guarda CUÁNDO se verificó, no un booleano: la fecha responde además
+    # "¿desde cuándo?", que es la mitad de las preguntas de soporte. Vacío =
+    # sin verificar, y sin verificar no se puede iniciar sesión.
+    #
+    # Quien llega por invitación entra ya verificado: para aceptarla tuvo que
+    # abrir el enlace que le llegó a ese correo, que es justo la prueba que
+    # esta columna guarda.
+    correo_verificado_en = models.DateTimeField(
+        "correo verificado en",
+        null=True,
+        blank=True,
+        help_text="Vacío mientras no haya abierto el enlace de verificación.",
+    )
+
     # Django trae estos dos campos en `PermissionsMixin`. Se redeclaran igual
     # que allí, solo para ponerle nombre en español a la tabla intermedia: sin
     # esto se llamarían `usuarios_usuario_groups` y
@@ -117,6 +138,10 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     objects = GestorDeUsuarios()
 
     USERNAME_FIELD = "correo"
+    # `EMAIL_FIELD` es el nombre por el que Django busca el correo de una
+    # persona (lo usan, entre otros, los generadores de token de más abajo).
+    # Sin esto apuntaría a un campo `email` que aquí no existe.
+    EMAIL_FIELD = "correo"
     REQUIRED_FIELDS = ["nombre", "apellido"]
 
     class Meta:
@@ -158,6 +183,10 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     @property
     def es_administrador(self) -> bool:
         return self.rol == Rol.ADMINISTRADOR
+
+    @property
+    def correo_esta_verificado(self) -> bool:
+        return self.correo_verificado_en is not None
 
 
 class Invitacion(ModeloConFechas):
