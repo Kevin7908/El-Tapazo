@@ -145,15 +145,21 @@ da 300 correos al día gratis; Resend, 3.000 al mes— y ponlas en tu `.env`:
 
 ```bash
 EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=smtp-relay.brevo.com
+EMAIL_HOST=smtp-relay.sendinblue.com
 EMAIL_PORT=587
 EMAIL_HOST_USER=...        # el "Iniciar sesión" que muestra el panel
 EMAIL_HOST_PASSWORD=...    # la clave SMTP
 DEFAULT_FROM_EMAIL=El Tapaso <un-remitente-validado@ejemplo.com>
 ```
 
-Dos avisos que ahorran media tarde:
+Tres avisos que ahorran media tarde:
 
+- **El host de Brevo no es el que dice su panel.** El panel muestra
+  `smtp-relay.brevo.com`, pero el nodo que atiende Sudamérica presenta un
+  certificado emitido solo para `smtp-relay.sendinblue.com` —el nombre
+  viejo—, así que con el nuevo la conexión falla con
+  `CERTIFICATE_VERIFY_FAILED: Hostname mismatch`. Es el mismo servidor y la
+  misma clave: usa `smtp-relay.sendinblue.com`.
 - El `DEFAULT_FROM_EMAIL` tiene que ser un remitente **validado** en el panel
   del proveedor. Si no lo está, rechaza el envío aunque las credenciales sean
   correctas.
