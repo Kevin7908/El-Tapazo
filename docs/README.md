@@ -13,6 +13,7 @@ Cómo trabajar en el proyecto.
 | [guia-base-de-datos.md](guias/guia-base-de-datos.md) | Modo local vs Supabase, y cómo conectar cada uno. |
 | [guia-docker.md](guias/guia-docker.md) | Cómo está armado el entorno de contenedores y cómo resolver problemas. |
 | [guia-flujo-git.md](guias/guia-flujo-git.md) | Ramas, commits y pull requests. |
+| [guia-api-autenticacion.md](guias/guia-api-autenticacion.md) | **Para el frontend:** cómo conectarse a la API — acceso, invitaciones, contraseñas y errores. |
 
 ## Backend (`docs/backend/`)
 
