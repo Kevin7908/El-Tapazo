@@ -6,7 +6,7 @@ de ningún dominio concreto.
 | Carpeta | Qué va aquí |
 | --- | --- |
 | `api/` | Clases base para vistas y serializers, mixins de DRF. |
-| `excepciones/` | Excepciones base y el manejador global de errores de DRF. |
+| `excepciones/` | `ErrorDeNegocio` y el manejador global que da a **todos** los errores de la API la misma forma: `{"error": {"codigo", "mensaje", "detalles"}}`. |
 | `middleware/` | Middlewares propios (id de petición, negocio activo, etc.). |
 | `paginacion/` | Clases de paginación compartidas. |
 | `utilidades/` | Utilidades genéricas (fechas, textos, códigos). |
