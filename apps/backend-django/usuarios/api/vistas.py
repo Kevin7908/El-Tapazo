@@ -20,10 +20,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
+from nucleo.permisos import EsAdministrador
 from usuarios.api import serializers
 from usuarios.dtos import AceptacionDeInvitacionDTO
 from usuarios.models import Invitacion
-from usuarios.permisos import EsAdministradorDelNegocio
 from usuarios.selectores import invitaciones as selector
 from usuarios.servicios import contrasenas, sesiones, verificacion_correo
 from usuarios.servicios import invitaciones as servicio
@@ -226,7 +226,7 @@ class InvitacionViewSet(mixins.ListModelMixin, GenericViewSet):
     invitaciones de otro negocio.
     """
 
-    permission_classes = [EsAdministradorDelNegocio]
+    permission_classes = [EsAdministrador]
     serializer_class = serializers.InvitacionOutputSerializer
     lookup_value_regex = "[0-9]+"
     # Solo para que drf-spectacular sepa de qué modelo es el listado: el
