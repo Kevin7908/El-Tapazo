@@ -4,6 +4,7 @@ import PaginaInicio from '@/paginas/PaginaInicio.jsx'
 import PaginaLogin from '@/paginas/PaginaLogin.jsx'
 import PaginaRegistro from '@/paginas/PaginaRegistro.jsx'
 import PaginaRecuperarPassword from '@/paginas/PaginaRecuperarPassword.jsx'
+import PaginaRestablecerPassword from '@/paginas/PaginaRestablecerPassword.jsx'
 import PaginaNoEncontrada from '@/paginas/PaginaNoEncontrada.jsx'
 
 export default function Rutas() {
@@ -26,6 +27,11 @@ export default function Rutas() {
       <Route
         path="/recuperar-password"
         element={<PaginaRecuperarPassword />}
+      />
+
+      <Route
+        path="/restablecer-password"
+        element={<PaginaRestablecerPassword />}
       />
 
       <Route
