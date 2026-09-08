@@ -1,0 +1,184 @@
+.registro {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+  background: #DADCDD;
+}
+
+.registro__card {
+  width: 100%;
+  max-width: 620px;
+  padding: 2.5rem;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(17, 40, 83, 0.15);
+}
+
+.registro__encabezado {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.registro__logo {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 0.5rem;
+}
+
+.registro__encabezado h1 {
+  margin: 0;
+  color: #112853;
+  font-size: 1.7rem;
+}
+
+.registro__encabezado p {
+  margin: 0.75rem 0 0;
+  color: #6F8BAE;
+}
+
+.registro__seccion {
+  margin-bottom: 2rem;
+}
+
+.registro__seccion h2 {
+  margin: 0 0 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #A6BBD4;
+  color: #395B88;
+  font-size: 1.15rem;
+}
+
+.campo {
+  margin-bottom: 1.25rem;
+}
+
+.campo label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #112853;
+  font-weight: 600;
+}
+
+.campo input,
+.campo select {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid #A6BBD4;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #112853;
+  font-size: 1rem;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.campo input:focus,
+.campo select:focus {
+  border-color: #395B88;
+  box-shadow: 0 0 0 3px rgba(57, 91, 136, 0.15);
+}
+
+.campo input[aria-invalid='true'],
+.campo select[aria-invalid='true'],
+.campo__select--error {
+  border-color: #b42318;
+}
+
+.campo__error {
+  margin: 0.4rem 0 0;
+  color: #b42318;
+  font-size: 0.875rem;
+}
+
+.campo__password {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.campo__password input {
+  padding-right: 5.5rem;
+}
+
+.campo__password-boton {
+  position: absolute;
+  right: 0.5rem;
+  border: none;
+  background: transparent;
+  color: #395B88;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.campo__password-boton:hover {
+  color: #112853;
+}
+
+.boton-principal {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: #112853;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+
+.boton-principal:hover {
+  background: #395B88;
+}
+
+.boton-principal:active {
+  transform: translateY(1px);
+}
+
+.boton-principal:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.registro__mensaje {
+  margin: 1rem 0 0;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #A6BBD4;
+  color: #112853;
+  text-align: center;
+}
+
+.registro__login {
+  margin-top: 1.5rem;
+  text-align: center;
+  color: #6F8BAE;
+}
+
+.registro__login a {
+  color: #395B88;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.registro__login a:hover {
+  color: #112853;
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .registro {
+    padding: 1rem;
+  }
+
+  .registro__card {
+    padding: 1.5rem;
+  }
+}

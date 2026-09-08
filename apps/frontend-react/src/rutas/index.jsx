@@ -1,14 +1,37 @@
 import { Route, Routes } from 'react-router-dom'
 
 import PaginaInicio from '@/paginas/PaginaInicio.jsx'
+import PaginaLogin from '@/paginas/PaginaLogin.jsx'
+import PaginaRegistro from '@/paginas/PaginaRegistro.jsx'
+import PaginaRecuperarPassword from '@/paginas/PaginaRecuperarPassword.jsx'
 import PaginaNoEncontrada from '@/paginas/PaginaNoEncontrada.jsx'
 
-/** Mapa de rutas de la aplicación. Cada módulo agrega las suyas aquí. */
 export default function Rutas() {
   return (
     <Routes>
-      <Route path="/" element={<PaginaInicio />} />
-      <Route path="*" element={<PaginaNoEncontrada />} />
+      <Route path="/" element={<PaginaLogin />} />
+
+      <Route path="/login" element={<PaginaLogin />} />
+
+      <Route
+        path="/registro"
+        element={<PaginaRegistro />}
+      />
+
+      <Route
+        path="/inicio"
+        element={<PaginaInicio />}
+      />
+
+      <Route
+        path="/recuperar-password"
+        element={<PaginaRecuperarPassword />}
+      />
+
+      <Route
+        path="*"
+        element={<PaginaNoEncontrada />}
+      />
     </Routes>
   )
 }
