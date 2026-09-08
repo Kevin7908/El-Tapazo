@@ -14,30 +14,15 @@ export default function Rutas() {
 
       <Route path="/login" element={<PaginaLogin />} />
 
-      <Route
-        path="/registro"
-        element={<PaginaRegistro />}
-      />
+      <Route path="/registro" element={<PaginaRegistro />} />
 
-      <Route
-        path="/inicio"
-        element={<PaginaInicio />}
-      />
+      <Route path="/inicio" element={<PaginaInicio />} />
 
-      <Route
-        path="/recuperar-password"
-        element={<PaginaRecuperarPassword />}
-      />
+      <Route path="/recuperar-password" element={<PaginaRecuperarPassword />} />
 
-      <Route
-        path="/restablecer-password"
-        element={<PaginaRestablecerPassword />}
-      />
+      <Route path="/restablecer-password" element={<PaginaRestablecerPassword />} />
 
-      <Route
-        path="*"
-        element={<PaginaNoEncontrada />}
-      />
+      <Route path="*" element={<PaginaNoEncontrada />} />
     </Routes>
   )
 }

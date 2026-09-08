@@ -5,7 +5,11 @@ import '@/estilos/login.css'
 
 import CampoTexto from '@/componentes/ui/CampoTexto.jsx'
 import BotonPrincipal from '@/componentes/ui/BotonPrincipal.jsx'
-import { validarCorreo, validarPassword, validarLogin } from '@/utilidades/validaciones/autenticacion.js'
+import {
+  validarCorreo,
+  validarPassword,
+  validarLogin,
+} from '@/utilidades/validaciones/autenticacion.js'
 
 export default function PaginaLogin() {
   const [correo, setCorreo] = useState('')
@@ -83,21 +87,15 @@ export default function PaginaLogin() {
       password,
     })
 
-    setMensaje(
-      'Formulario válido. El backend todavía no está conectado.'
-    )
+    setMensaje('Formulario válido. El backend todavía no está conectado.')
   }
 
   return (
     <main className="login">
       <section className="login__card">
         <div className="login__encabezado">
-            <img
-                src={logoEmpresa}
-                alt="Logo de El Tapaso"
-                className="login__logo"
-            />
-            <h1>Iniciar sesión</h1>
+          <img src={logoEmpresa} alt="Logo de El Tapaso" className="login__logo" />
+          <h1>Iniciar sesión</h1>
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
@@ -115,9 +113,7 @@ export default function PaginaLogin() {
           />
 
           <div className="campo">
-            <label htmlFor="password">
-              Contraseña
-            </label>
+            <label htmlFor="password">Contraseña</label>
 
             <div className="campo__password">
               <input
@@ -130,57 +126,36 @@ export default function PaginaLogin() {
                 placeholder="Ingresa tu contraseña"
                 autoComplete="current-password"
                 aria-invalid={Boolean(errores.password)}
-                aria-describedby={
-                  errores.password
-                    ? 'password-error'
-                    : undefined
-                }
+                aria-describedby={errores.password ? 'password-error' : undefined}
               />
 
               <button
                 type="button"
                 className="campo__password-boton"
-                onClick={() =>
-                  setMostrarPassword(!mostrarPassword)
-                }
+                onClick={() => setMostrarPassword(!mostrarPassword)}
               >
                 {mostrarPassword ? 'Ocultar' : 'Mostrar'}
               </button>
             </div>
 
             {errores.password && (
-              <p
-                id="password-error"
-                className="campo__error"
-              >
+              <p id="password-error" className="campo__error">
                 {errores.password}
               </p>
             )}
           </div>
 
           <div className="login__recuperacion">
-            <Link to="/recuperar-password">
-              ¿Olvidaste tu contraseña?
-            </Link>
+            <Link to="/recuperar-password">¿Olvidaste tu contraseña?</Link>
           </div>
 
-          <BotonPrincipal type="submit">
-            Iniciar sesión
-          </BotonPrincipal>
+          <BotonPrincipal type="submit">Iniciar sesión</BotonPrincipal>
 
-          {mensaje && (
-            <p className="login__mensaje">
-              {mensaje}
-            </p>
-          )}
+          {mensaje && <p className="login__mensaje">{mensaje}</p>}
         </form>
 
         <div className="login__registro">
-          <span>¿No tienes una cuenta?</span>{' '}
-
-          <Link to="/registro">
-            Regístrate
-          </Link>
+          <span>¿No tienes una cuenta?</span> <Link to="/registro">Regístrate</Link>
         </div>
       </section>
     </main>

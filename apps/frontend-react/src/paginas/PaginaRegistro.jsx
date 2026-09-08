@@ -40,8 +40,7 @@ export default function PaginaRegistro() {
   const [mensaje, setMensaje] = useState('')
 
   const [mostrarPassword, setMostrarPassword] = useState(false)
-  const [mostrarConfirmarPassword, setMostrarConfirmarPassword] =
-    useState(false)
+  const [mostrarConfirmarPassword, setMostrarConfirmarPassword] = useState(false)
 
   function handleChange(event) {
     const { name, value } = event.target
@@ -72,34 +71,22 @@ export default function PaginaRegistro() {
         break
 
       case 'primerNombre':
-        error = validarNombre(
-          formulario.primerNombre,
-          'El primer nombre'
-        )
+        error = validarNombre(formulario.primerNombre, 'El primer nombre')
         break
 
       case 'segundoNombre':
         if (formulario.segundoNombre.trim()) {
-          error = validarNombre(
-            formulario.segundoNombre,
-            'El segundo nombre'
-          )
+          error = validarNombre(formulario.segundoNombre, 'El segundo nombre')
         }
         break
 
       case 'primerApellido':
-        error = validarNombre(
-          formulario.primerApellido,
-          'El primer apellido'
-        )
+        error = validarNombre(formulario.primerApellido, 'El primer apellido')
         break
 
       case 'segundoApellido':
         if (formulario.segundoApellido.trim()) {
-          error = validarNombre(
-            formulario.segundoApellido,
-            'El segundo apellido'
-          )
+          error = validarNombre(formulario.segundoApellido, 'El segundo apellido')
         }
         break
 
@@ -112,9 +99,7 @@ export default function PaginaRegistro() {
         break
 
       case 'fechaNacimiento':
-        error = validarFechaNacimiento(
-          formulario.fechaNacimiento
-        )
+        error = validarFechaNacimiento(formulario.fechaNacimiento)
         break
 
       case 'rol':
@@ -126,10 +111,7 @@ export default function PaginaRegistro() {
         break
 
       case 'confirmarPassword':
-        error = validarConfirmarPassword(
-          formulario.password,
-          formulario.confirmarPassword
-        )
+        error = validarConfirmarPassword(formulario.password, formulario.confirmarPassword)
         break
 
       default:
@@ -148,23 +130,15 @@ export default function PaginaRegistro() {
     const validaciones = {
       cedula: validarCedula(formulario.cedula),
 
-      primerNombre: validarNombre(
-        formulario.primerNombre,
-        'El primer nombre'
-      ),
+      primerNombre: validarNombre(formulario.primerNombre, 'El primer nombre'),
 
-      primerApellido: validarNombre(
-        formulario.primerApellido,
-        'El primer apellido'
-      ),
+      primerApellido: validarNombre(formulario.primerApellido, 'El primer apellido'),
 
       correo: validarCorreo(formulario.correo),
 
       telefono: validarTelefono(formulario.telefono),
 
-      fechaNacimiento: validarFechaNacimiento(
-        formulario.fechaNacimiento
-      ),
+      fechaNacimiento: validarFechaNacimiento(formulario.fechaNacimiento),
 
       rol: validarRol(formulario.rol),
 
@@ -177,10 +151,7 @@ export default function PaginaRegistro() {
     }
 
     if (formulario.segundoNombre.trim()) {
-      validaciones.segundoNombre = validarNombre(
-        formulario.segundoNombre,
-        'El segundo nombre'
-      )
+      validaciones.segundoNombre = validarNombre(formulario.segundoNombre, 'El segundo nombre')
     }
 
     if (formulario.segundoApellido.trim()) {
@@ -215,33 +186,21 @@ export default function PaginaRegistro() {
     // Temporalmente no existe conexión con el backend.
     console.log(formulario)
 
-    setMensaje(
-      'Formulario válido. El backend todavía no está conectado.'
-    )
+    setMensaje('Formulario válido. El backend todavía no está conectado.')
   }
 
   return (
     <main className="registro">
       <section className="registro__card">
-
         <div className="registro__encabezado">
-
-          <img
-            src={logoEmpresa}
-            alt="Logo de El Tapaso"
-            className="registro__logo"
-          />
+          <img src={logoEmpresa} alt="Logo de El Tapaso" className="registro__logo" />
 
           <h1>Crear usuario</h1>
 
-          <p>
-            Completa la información para crear una nueva cuenta.
-          </p>
-
+          <p>Completa la información para crear una nueva cuenta.</p>
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
-
           <div className="registro__seccion">
             <h2>Información personal</h2>
 
@@ -364,30 +323,18 @@ export default function PaginaRegistro() {
                 className={errores.rol ? 'campo__select--error' : ''}
                 aria-invalid={Boolean(errores.rol)}
               >
-                <option value="">
-                  Selecciona un rol
-                </option>
+                <option value="">Selecciona un rol</option>
 
-                <option value="Administrador">
-                  Administrador
-                </option>
+                <option value="Administrador">Administrador</option>
 
-                <option value="Operativo">
-                  Operativo
-                </option>
+                <option value="Operativo">Operativo</option>
               </select>
 
-              {errores.rol && (
-                <p className="campo__error">
-                  {errores.rol}
-                </p>
-              )}
+              {errores.rol && <p className="campo__error">{errores.rol}</p>}
             </div>
 
             <div className="campo">
-              <label htmlFor="password">
-                Contraseña
-              </label>
+              <label htmlFor="password">Contraseña</label>
 
               <div className="campo__password">
                 <input
@@ -405,88 +352,54 @@ export default function PaginaRegistro() {
                 <button
                   type="button"
                   className="campo__password-boton"
-                  onClick={() =>
-                    setMostrarPassword(!mostrarPassword)
-                  }
+                  onClick={() => setMostrarPassword(!mostrarPassword)}
                 >
                   {mostrarPassword ? 'Ocultar' : 'Mostrar'}
                 </button>
               </div>
 
-              {errores.password && (
-                <p className="campo__error">
-                  {errores.password}
-                </p>
-              )}
+              {errores.password && <p className="campo__error">{errores.password}</p>}
             </div>
 
             <div className="campo">
-              <label htmlFor="confirmarPassword">
-                Confirmar contraseña
-              </label>
+              <label htmlFor="confirmarPassword">Confirmar contraseña</label>
 
               <div className="campo__password">
                 <input
                   id="confirmarPassword"
                   name="confirmarPassword"
-                  type={
-                    mostrarConfirmarPassword
-                      ? 'text'
-                      : 'password'
-                  }
+                  type={mostrarConfirmarPassword ? 'text' : 'password'}
                   value={formulario.confirmarPassword}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   placeholder="Repite la contraseña"
                   autoComplete="new-password"
-                  aria-invalid={Boolean(
-                    errores.confirmarPassword
-                  )}
+                  aria-invalid={Boolean(errores.confirmarPassword)}
                 />
 
                 <button
                   type="button"
                   className="campo__password-boton"
-                  onClick={() =>
-                    setMostrarConfirmarPassword(
-                      !mostrarConfirmarPassword
-                    )
-                  }
+                  onClick={() => setMostrarConfirmarPassword(!mostrarConfirmarPassword)}
                 >
-                  {mostrarConfirmarPassword
-                    ? 'Ocultar'
-                    : 'Mostrar'}
+                  {mostrarConfirmarPassword ? 'Ocultar' : 'Mostrar'}
                 </button>
               </div>
 
               {errores.confirmarPassword && (
-                <p className="campo__error">
-                  {errores.confirmarPassword}
-                </p>
+                <p className="campo__error">{errores.confirmarPassword}</p>
               )}
             </div>
           </div>
 
-          <BotonPrincipal type="submit">
-            Crear usuario
-          </BotonPrincipal>
+          <BotonPrincipal type="submit">Crear usuario</BotonPrincipal>
 
-          {mensaje && (
-            <p className="registro__mensaje">
-              {mensaje}
-            </p>
-          )}
-
+          {mensaje && <p className="registro__mensaje">{mensaje}</p>}
         </form>
 
         <div className="registro__login">
-          <span>¿Ya tienes una cuenta?</span>{' '}
-
-          <Link to="/login">
-            Iniciar sesión
-          </Link>
+          <span>¿Ya tienes una cuenta?</span> <Link to="/login">Iniciar sesión</Link>
         </div>
-
       </section>
     </main>
   )

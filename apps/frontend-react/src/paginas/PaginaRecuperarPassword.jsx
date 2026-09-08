@@ -60,26 +60,17 @@ export default function PaginaRecuperarPassword() {
   return (
     <main className="recuperar-password">
       <section className="recuperar-password__card">
-
         <div className="recuperar-password__encabezado">
-
-          <img
-            src={logoEmpresa}
-            alt="Logo de El Tapaso"
-            className="recuperar-password__logo"
-          />
+          <img src={logoEmpresa} alt="Logo de El Tapaso" className="recuperar-password__logo" />
 
           <h1>Recuperar contraseña</h1>
 
           <p>
-            Ingresa tu correo electrónico y te enviaremos
-            un enlace para restablecer tu contraseña.
+            Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
           </p>
-
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
-
           <CampoTexto
             id="correo"
             name="correo"
@@ -93,26 +84,14 @@ export default function PaginaRecuperarPassword() {
             autoComplete="email"
           />
 
-          <BotonPrincipal type="submit">
-            Enviar enlace
-          </BotonPrincipal>
+          <BotonPrincipal type="submit">Enviar enlace</BotonPrincipal>
 
-          {mensaje && (
-            <p className="recuperar-password__mensaje">
-              {mensaje}
-            </p>
-          )}
-
+          {mensaje && <p className="recuperar-password__mensaje">{mensaje}</p>}
         </form>
 
         <div className="recuperar-password__volver">
-
-          <Link to="/login">
-            ← Volver a iniciar sesión
-          </Link>
-
+          <Link to="/login">← Volver a iniciar sesión</Link>
         </div>
-
       </section>
     </main>
   )

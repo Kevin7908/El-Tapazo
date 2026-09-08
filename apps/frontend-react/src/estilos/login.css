@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background: #DADCDD;
+  background: #dadcdd;
 }
 
 .login__card {
@@ -29,13 +29,13 @@
 
 .login__encabezado h2 {
   margin: 0.75rem 0 0.5rem;
-  color: #395B88;
+  color: #395b88;
   font-size: 1.5rem;
 }
 
 .login__encabezado p {
   margin: 0;
-  color: #6F8BAE;
+  color: #6f8bae;
 }
 
 .campo {
@@ -52,17 +52,19 @@
 .campo input {
   width: 100%;
   padding: 0.8rem 1rem;
-  border: 1px solid #A6BBD4;
+  border: 1px solid #a6bbd4;
   border-radius: 10px;
   background: #ffffff;
   color: #112853;
   font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .campo input:focus {
-  border-color: #395B88;
+  border-color: #395b88;
   box-shadow: 0 0 0 3px rgba(57, 91, 136, 0.15);
 }
 
@@ -91,7 +93,7 @@
   right: 0.5rem;
   border: none;
   background: transparent;
-  color: #395B88;
+  color: #395b88;
   font-weight: 600;
   cursor: pointer;
 }
@@ -106,7 +108,7 @@
 }
 
 .login a {
-  color: #395B88;
+  color: #395b88;
   font-weight: 600;
   text-decoration: none;
 }
@@ -126,11 +128,13 @@
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    transform 0.2s;
 }
 
 .boton-principal:hover {
-  background: #395B88;
+  background: #395b88;
 }
 
 .boton-principal:active {
@@ -144,9 +148,9 @@
 
 .login__mensaje {
   margin: 1rem 0 0;
-  padding: 0.75rem; 
+  padding: 0.75rem;
   border-radius: 8px;
-  background: #A6BBD4;
+  background: #a6bbd4;
   color: #112853;
   text-align: center;
 }
@@ -154,7 +158,7 @@
 .login__registro {
   margin-top: 1.5rem;
   text-align: center;
-  color: #6F8BAE;
+  color: #6f8bae;
 }
 
 .login__logo {

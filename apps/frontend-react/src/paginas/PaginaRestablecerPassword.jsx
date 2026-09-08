@@ -25,8 +25,7 @@ export default function PaginaRestablecerPassword() {
   const [mensaje, setMensaje] = useState('')
 
   const [mostrarPassword, setMostrarPassword] = useState(false)
-  const [mostrarConfirmarPassword, setMostrarConfirmarPassword] =
-    useState(false)
+  const [mostrarConfirmarPassword, setMostrarConfirmarPassword] = useState(false)
 
   function handlePasswordChange(event) {
     const valor = event.target.value
@@ -44,10 +43,7 @@ export default function PaginaRestablecerPassword() {
     if (errores.confirmarPassword) {
       setErrores((erroresActuales) => ({
         ...erroresActuales,
-        confirmarPassword: validarConfirmarPassword(
-          valor,
-          confirmarPassword
-        ),
+        confirmarPassword: validarConfirmarPassword(valor, confirmarPassword),
       }))
     }
   }
@@ -61,10 +57,7 @@ export default function PaginaRestablecerPassword() {
     if (errores.confirmarPassword) {
       setErrores((erroresActuales) => ({
         ...erroresActuales,
-        confirmarPassword: validarConfirmarPassword(
-          password,
-          valor
-        ),
+        confirmarPassword: validarConfirmarPassword(password, valor),
       }))
     }
   }
@@ -79,10 +72,7 @@ export default function PaginaRestablecerPassword() {
   }
 
   function handleConfirmarPasswordBlur() {
-    const error = validarConfirmarPassword(
-      password,
-      confirmarPassword
-    )
+    const error = validarConfirmarPassword(password, confirmarPassword)
 
     setErrores((erroresActuales) => ({
       ...erroresActuales,
@@ -99,18 +89,14 @@ export default function PaginaRestablecerPassword() {
 
     const errorPassword = validarPassword(password)
 
-    const errorConfirmarPassword = validarConfirmarPassword(
-      password,
-      confirmarPassword
-    )
+    const errorConfirmarPassword = validarConfirmarPassword(password, confirmarPassword)
 
     if (errorPassword) {
       nuevosErrores.password = errorPassword
     }
 
     if (errorConfirmarPassword) {
-      nuevosErrores.confirmarPassword =
-        errorConfirmarPassword
+      nuevosErrores.confirmarPassword = errorConfirmarPassword
     }
 
     setErrores(nuevosErrores)
@@ -125,50 +111,30 @@ export default function PaginaRestablecerPassword() {
       password,
     })
 
-    setMensaje(
-      'La contraseña cumple con los requisitos. El backend todavía no está conectado.'
-    )
+    setMensaje('La contraseña cumple con los requisitos. El backend todavía no está conectado.')
   }
 
   return (
     <main className="restablecer-password">
       <section className="restablecer-password__card">
-
         <div className="restablecer-password__encabezado">
-
-          <img
-            src={logoEmpresa}
-            alt="Logo de El Tapaso"
-            className="restablecer-password__logo"
-          />
+          <img src={logoEmpresa} alt="Logo de El Tapaso" className="restablecer-password__logo" />
 
           <h1>Restablecer contraseña</h1>
 
-          <p>
-            Crea una nueva contraseña para tu cuenta.
-          </p>
-
+          <p>Crea una nueva contraseña para tu cuenta.</p>
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
-
           {/* NUEVA CONTRASEÑA */}
           <div className="campo">
-
-            <label htmlFor="password">
-              Nueva contraseña
-            </label>
+            <label htmlFor="password">Nueva contraseña</label>
 
             <div className="campo__password">
-
               <input
                 id="password"
                 name="password"
-                type={
-                  mostrarPassword
-                    ? 'text'
-                    : 'password'
-                }
+                type={mostrarPassword ? 'text' : 'password'}
                 value={password}
                 onChange={handlePasswordChange}
                 onBlur={handlePasswordBlur}
@@ -180,79 +146,48 @@ export default function PaginaRestablecerPassword() {
               <button
                 type="button"
                 className="campo__password-boton"
-                onClick={() =>
-                  setMostrarPassword(!mostrarPassword)
-                }
+                onClick={() => setMostrarPassword(!mostrarPassword)}
               >
-                {mostrarPassword
-                  ? 'Ocultar'
-                  : 'Mostrar'}
+                {mostrarPassword ? 'Ocultar' : 'Mostrar'}
               </button>
-
             </div>
 
-            {errores.password && (
-              <p className="campo__error">
-                {errores.password}
-              </p>
-            )}
-
+            {errores.password && <p className="campo__error">{errores.password}</p>}
           </div>
 
           {/* CONFIRMAR CONTRASEÑA */}
           <div className="campo">
-
-            <label htmlFor="confirmarPassword">
-              Confirmar contraseña
-            </label>
+            <label htmlFor="confirmarPassword">Confirmar contraseña</label>
 
             <div className="campo__password">
-
               <input
                 id="confirmarPassword"
                 name="confirmarPassword"
-                type={
-                  mostrarConfirmarPassword
-                    ? 'text'
-                    : 'password'
-                }
+                type={mostrarConfirmarPassword ? 'text' : 'password'}
                 value={confirmarPassword}
                 onChange={handleConfirmarPasswordChange}
                 onBlur={handleConfirmarPasswordBlur}
                 placeholder="Repite la nueva contraseña"
                 autoComplete="new-password"
-                aria-invalid={Boolean(
-                  errores.confirmarPassword
-                )}
+                aria-invalid={Boolean(errores.confirmarPassword)}
               />
 
               <button
                 type="button"
                 className="campo__password-boton"
-                onClick={() =>
-                  setMostrarConfirmarPassword(
-                    !mostrarConfirmarPassword
-                  )
-                }
+                onClick={() => setMostrarConfirmarPassword(!mostrarConfirmarPassword)}
               >
-                {mostrarConfirmarPassword
-                  ? 'Ocultar'
-                  : 'Mostrar'}
+                {mostrarConfirmarPassword ? 'Ocultar' : 'Mostrar'}
               </button>
-
             </div>
 
             {errores.confirmarPassword && (
-              <p className="campo__error">
-                {errores.confirmarPassword}
-              </p>
+              <p className="campo__error">{errores.confirmarPassword}</p>
             )}
-
           </div>
 
           {/* REQUISITOS */}
           <div className="password__requisitos">
-
             <p>La contraseña debe contener:</p>
 
             <ul>
@@ -263,29 +198,16 @@ export default function PaginaRestablecerPassword() {
               <li>Al menos un carácter especial.</li>
               <li>No debe contener espacios.</li>
             </ul>
-
           </div>
 
-          <BotonPrincipal type="submit">
-            Cambiar contraseña
-          </BotonPrincipal>
+          <BotonPrincipal type="submit">Cambiar contraseña</BotonPrincipal>
 
-          {mensaje && (
-            <p className="restablecer-password__mensaje">
-              {mensaje}
-            </p>
-          )}
-
+          {mensaje && <p className="restablecer-password__mensaje">{mensaje}</p>}
         </form>
 
         <div className="restablecer-password__volver">
-
-          <Link to="/login">
-            ← Volver a iniciar sesión
-          </Link>
-
+          <Link to="/login">← Volver a iniciar sesión</Link>
         </div>
-
       </section>
     </main>
   )

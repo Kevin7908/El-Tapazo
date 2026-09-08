@@ -153,10 +153,7 @@ export function validarFechaNacimiento(fechaNacimiento) {
 
   const mes = hoy.getMonth() - fecha.getMonth()
 
-  if (
-    mes < 0 ||
-    (mes === 0 && hoy.getDate() < fecha.getDate())
-  ) {
+  if (mes < 0 || (mes === 0 && hoy.getDate() < fecha.getDate())) {
     edad--
   }
 
