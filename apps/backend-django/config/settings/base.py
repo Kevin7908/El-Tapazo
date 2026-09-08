@@ -51,6 +51,7 @@ LOCAL_APPS = [
     "nucleo",
     "negocios",
     "usuarios",
+    "clientes",
     "catalogo",
     "inventario",
     "eventos",
@@ -175,6 +176,13 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "API del sistema de inventario El Tapaso.",
     "VERSION": "0.1.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    # Varios campos se llaman `tipo` y sus listas de valores no son la misma.
+    # Sin estos nombres, el esquema los bautiza `Tipo34fEnum`, que no le dice
+    # nada a quien genera el cliente del frontend.
+    "ENUM_NAME_OVERRIDES": {
+        "TipoDeUbicacion": "inventario.models.TIPOS_DE_UBICACION",
+        "TipoDeMovimiento": "inventario.models.TIPOS_DE_MOVIMIENTO",
+    },
 }
 
 CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS")

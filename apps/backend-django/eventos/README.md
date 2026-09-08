@@ -2,7 +2,21 @@
 
 Canal de venta en eventos/bar: la noche, las pulseras NFC, las cuentas por persona y grupo, las comandas y los pagos.
 
-**Modelos previstos:** `Evento`, `PulseraNfc`, `GrupoEvento`, `ClienteEvento`, `PedidoEvento`, `DetallePedidoEvento`, `AlertaConsumo`, `PagoEvento`.
+**Modelos:** `Evento` · `PulseraNfc` · `GrupoEvento` · `ClienteEvento` ·
+`PedidoEvento` · `DetallePedidoEvento` · `AlertaConsumo` · `PagoEvento`.
+
+La cadena es: `Evento` → `GrupoEvento` (la mesa) → `ClienteEvento` (la persona
+con su pulsera) → `PedidoEvento` → `DetallePedidoEvento`.
+
+Un `Evento` no es solo una fiesta: es **una jornada de venta que se abre y se
+cierra**. En un negocio que abre a diario, es el día de hoy. La `PulseraNfc`
+solo guarda el UID del chip y su condición física — a quién se le prestó vive
+en `ClienteEvento`, una fila nueva cada vez.
+
+Un `PedidoEvento` sin `ClienteEvento` es la **venta de mostrador**: se paga al
+instante y no hay cuenta que cobrar después. Un `PagoEvento` salda el grupo
+completo, la parte de una persona o una venta de mostrador — nunca dos cosas a
+la vez, y la base de datos lo obliga.
 
 ## Carpetas
 

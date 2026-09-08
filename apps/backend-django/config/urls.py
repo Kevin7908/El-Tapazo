@@ -12,6 +12,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 api_v1_patterns = [
     path("negocios/", include("negocios.urls")),
     path("usuarios/", include("usuarios.urls")),
+    path("clientes/", include("clientes.urls")),
     path("catalogo/", include("catalogo.urls")),
     path("inventario/", include("inventario.urls")),
     path("eventos/", include("eventos.urls")),

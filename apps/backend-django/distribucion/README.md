@@ -2,7 +2,13 @@
 
 Canal de venta mayorista (B2B): tiendas cliente y sus pedidos.
 
-**Modelos previstos:** `ClienteDistribucion`, `PedidoDistribucion`, `DetallePedidoDistribucion`.
+**Modelos:** `ClienteDistribucion` · `PedidoDistribucion` ·
+`DetallePedidoDistribucion`.
+
+Mismo catálogo que el bar, otro precio (`producto.precio_mayorista`) y, casi
+siempre, crédito: entre `fecha_pedido` y `fecha_entrega` corre el plazo de la
+tienda. El `precio_unitario` de cada línea se congela al vender, para que
+cambiar la lista de precios no reescriba las facturas del mes pasado.
 
 ## Carpetas
 

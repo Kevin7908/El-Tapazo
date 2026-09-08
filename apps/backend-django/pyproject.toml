@@ -16,6 +16,7 @@ known-first-party = [
     "nucleo",
     "negocios",
     "usuarios",
+    "clientes",
     "catalogo",
     "inventario",
     "eventos",
@@ -26,7 +27,12 @@ known-first-party = [
 DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["test_*.py", "tests.py"]
 addopts = "-ra --strict-markers"
-testpaths = ["nucleo", "negocios", "usuarios", "catalogo", "inventario", "eventos", "distribucion"]
+# El proyecto corre con --strict-markers: un marcador sin declarar aquí no
+# falla la prueba, falla la recolección entera.
+markers = [
+    "lento: pruebas que tardan de más (concurrencia con transaction=True, por ejemplo)",
+]
+testpaths = ["nucleo", "negocios", "usuarios", "clientes", "catalogo", "inventario", "eventos", "distribucion"]
 
 [tool.coverage.run]
 omit = ["*/migrations/*", "*/tests/*", "config/*", "manage.py"]
