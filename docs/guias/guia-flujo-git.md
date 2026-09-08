@@ -48,7 +48,7 @@ Y en el editor escribes:
 feat: estructura inicial del backend
 
 Crear la configuración del proyecto Django
-Agregar las apps accounts, catalog e inventory
+Agregar las apps usuarios, catalogo e inventario
 Definir la estructura de carpetas por capas
 Dejar el entorno listo para Docker
 ```
@@ -71,8 +71,8 @@ style    # Solo formato (espacios, comas, sangría)
 Opcionalmente se puede indicar el módulo entre paréntesis:
 
 ```
-feat(catalog): agregar modelo de producto
-fix(inventory): corregir el cálculo de stock disponible
+feat(catalogo): agregar modelo de producto
+fix(inventario): corregir el cálculo de existencias disponibles
 docs(guias): agregar la guía de instalación
 chore(docker): actualizar postgres a la versión 18
 ```
@@ -111,7 +111,7 @@ git push -u origin feat/registro-de-productos
 git status
 git diff
 git add .
-git commit -m "feat(catalog): agregar el modelo de producto"
+git commit -m "feat(catalogo): agregar el modelo de producto"
 git push -u origin feat/registro-de-productos
 ```
 

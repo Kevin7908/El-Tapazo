@@ -105,7 +105,7 @@ conecta, entra al panel y reactívalo.
 | --- | --- |
 | Aplicar migraciones | `./dev.sh migrate` |
 | Crear migraciones | `./dev.sh makemigrations` |
-| Ver el SQL de una migración | `./dev.sh manage sqlmigrate accounts 0001` |
+| Ver el SQL de una migración | `./dev.sh manage sqlmigrate usuarios 0001` |
 | Consola psql (**solo modo local**) | `./dev.sh psql` |
 | Ver el estado de las migraciones | `./dev.sh manage showmigrations` |
 | Crear el staff de plataforma | `./dev.sh superuser` |
@@ -126,5 +126,5 @@ El diseño original contempla aislamiento por negocio con RLS de PostgreSQL. Est
    abra la transacción. Con `SET` a secas y conexiones persistentes, el negocio
    de un usuario se filtraría a la petición de otro.
 
-Mientras tanto, el aislamiento se hace en la capa de `repositories/`, filtrando
+Mientras tanto, el aislamiento se hace en la capa de `repositorios/`, filtrando
 siempre por el negocio del usuario autenticado.

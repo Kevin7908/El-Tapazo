@@ -34,7 +34,9 @@ línea de 100 caracteres, imports ordenados automáticamente.
 
 ## Modelos
 
-- Heredar del modelo base de `nucleo` cuando haga falta `created_at`/`updated_at`.
+- Heredar de `ModeloConFechas` (`nucleo/models.py`) cuando haga falta
+  `creado_en`/`actualizado_en`, y de `ModeloDelNegocio` cuando la tabla cuelgue
+  de un negocio: así la columna `negocio_id` se llama igual en todas.
 - Siempre definir `class Meta` con `db_table`, `ordering` y `verbose_name`.
 - **`db_table` obligatorio y en plural.** Sin él, Django nombra la tabla
   `app_modelo` (`usuarios_usuario`, `negocios_negocio`). Queremos los nombres
@@ -56,7 +58,7 @@ línea de 100 caracteres, imports ordenados automáticamente.
 - Si escriben en varias tablas, envolver en `transaction.atomic()`.
 - Lanzan excepciones del dominio (`excepciones/`), no `Response` ni `Http404`.
 - No importan nada de `api/`: la dependencia va en un solo sentido
-  (`api → services → repositories → models`).
+  (`api → servicios → repositorios → models`).
 
 ---
 
@@ -76,7 +78,7 @@ línea de 100 caracteres, imports ordenados automáticamente.
 
 - Se generan con `./dev.sh makemigrations` y **se suben a git**.
 - Una migración por cambio lógico, con nombre descriptivo:
-  `./dev.sh makemigrations catalogo -n add_barcode_to_product`
+  `./dev.sh makemigrations catalogo -n agregar_codigo_barras_a_producto`
 - Nunca editar una migración que ya está en `main`: crear una nueva.
 - Migraciones de datos: en un archivo aparte, con `RunPython` y su función
   inversa.
@@ -86,11 +88,11 @@ línea de 100 caracteres, imports ordenados automáticamente.
 ## Pruebas
 
 - Con `pytest` + `pytest-django`, dentro de `pruebas/` de cada app.
-- Un archivo por capa: `test_models.py`, `test_servicios.py`, `test_selectores.py`,
-  `test_api.py`.
+- Un archivo por capa: `test_modelos.py`, `test_servicios.py`,
+  `test_selectores.py`, `test_api.py`.
 - Nombres explícitos: `def test_registrar_entrada_aumenta_el_stock():`
 - Datos de prueba con `factory-boy`, no con fixtures JSON.
-- Prioridad: los **services** son lo más importante de probar; ahí está el
+- Prioridad: los **servicios** son lo más importante de probar; ahí está el
   negocio.
 
 ```bash

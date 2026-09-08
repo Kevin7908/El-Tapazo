@@ -21,6 +21,7 @@ apps/backend-django/
 ├── nucleo/                 Código compartido entre todas las apps
 ├── negocios/               Negocios (la raíz: todo cuelga de aquí)
 ├── usuarios/               Quien opera el sistema, roles e invitaciones
+├── clientes/               Quien compra en el bar: la ficha de la persona
 ├── catalogo/               Productos y precios
 ├── inventario/             Ubicaciones, existencias y kardex de movimientos
 ├── eventos/                Canal evento/bar: pulseras NFC, cuentas, comandas y pagos
@@ -122,7 +123,7 @@ guardan. Son el corazón del sistema: aquí vive lo que hace el negocio, no en l
 vista ni en el modelo.
 
 Ejemplos para este proyecto: `registrar_entrada_de_mercancia`,
-`transferir_entre_bodegas`, `ajustar_stock`.
+`transferir_entre_ubicaciones`, `ajustar_existencias`.
 
 Reglas: una función = una acción; reciben tipos simples o DTOs, no objetos
 `request`; si tocan varias tablas, van dentro de una transacción.
@@ -130,22 +131,27 @@ Reglas: una función = una acción; reciben tipos simples o DTOs, no objetos
 ### `selectores/` — las consultas de negocio (lectura)
 
 El espejo de `servicios/` para leer. Devuelven los datos ya preparados para
-mostrar: `obtener_stock_por_bodega`, `listar_productos_bajo_minimo`.
+mostrar: `existencias_por_ubicacion`, `productos_bajo_minimo`.
 
 Separar lectura de escritura evita que un archivo gigante mezcle las dos cosas.
 
 ### `repositorios/` — el acceso a datos
 
-Las consultas al ORM aisladas en un solo lugar. Los *services* y *selectors*
-llaman al repositorio en vez de escribir `Model.objects.filter(...)` regados por
+Las consultas al ORM aisladas en un solo lugar. Los servicios y los selectores
+llaman al repositorio en vez de escribir `Modelo.objects.filter(...)` regados por
 todo el código.
 
 Ventaja: si cambia una consulta o hay que optimizarla, se toca un solo archivo,
 y las pruebas pueden reemplazar el repositorio por uno falso.
 
+Regla que hace que esto se sostenga: **`Modelo.objects` solo aparece dentro de
+`repositorios/`**. Si aparece en un servicio, en un selector o en una vista, es
+que falta una función de repositorio.
+
 ### `dtos/` — objetos de transferencia
 
-`dataclasses` que llevan datos entre capas sin arrastrar objetos de Django.
+`dataclasses` congeladas (`@dataclass(frozen=True)`, sufijo `DTO`) que llevan
+datos entre capas sin arrastrar objetos de Django.
 Sirven para que un *service* reciba un paquete de datos claro y tipado en vez de
 un diccionario suelto.
 
@@ -153,7 +159,7 @@ un diccionario suelto.
 
 Funciones que verifican reglas del dominio: que un SKU tenga el formato
 acordado, que una cantidad no sea negativa, que un NIT sea válido. Se usan desde
-los serializers, los modelos o los services.
+los serializers, los modelos o los servicios.
 
 Diferencia con el serializer: el serializer valida **forma** (es un entero, no
 está vacío); el validator valida **negocio** (ese código ya existe, esa cantidad
@@ -161,14 +167,18 @@ supera el stock).
 
 ### `permisos/` — quién puede hacer qué
 
-Clases de permisos de DRF propias de la app: `EsAdministradorDeBodega`,
-`PuedeAjustarInventario`.
+Clases de permisos de DRF **propias de la app**, cuando una regla solo tiene
+sentido ahí. Las que usan dos o más apps —`EsAdministrador`,
+`EsCajeroOAdministrador`, `EsDelEquipo`— viven en `nucleo/permisos/`.
 
 ### `excepciones/` — errores del dominio
 
-Excepciones propias (`StockInsuficiente`, `ProductoDuplicado`) que los services
-lanzan y que el manejador global de `core/exceptions/` traduce a una respuesta
-HTTP con su código correspondiente. Así el negocio no sabe nada de HTTP.
+Excepciones propias (`ExistenciasInsuficientes`, `ProductoDuplicado`) que los
+servicios lanzan y que el manejador global de `nucleo/excepciones/` traduce a una
+respuesta HTTP con su código correspondiente. Así el negocio no sabe nada de HTTP.
+
+Todas heredan de `ErrorDeNegocio` y sobrescriben `mensaje`, `codigo` y
+`status_http`.
 
 ### `migrations/` — historial de la base de datos
 
@@ -177,8 +187,9 @@ mano salvo casos puntuales (migraciones de datos).
 
 ### `pruebas/` — pruebas
 
-Un archivo por capa: `test_services.py`, `test_selectors.py`, `test_api.py`,
-`test_models.py`. Ver [convenciones.md](convenciones.md).
+Un archivo por capa: `test_servicios.py`, `test_selectores.py`, `test_api.py`,
+`test_modelos.py`, más `fabricas.py` con los datos de prueba. Ver
+[convenciones.md](convenciones.md).
 
 ### `models.py` — las tablas
 
@@ -206,12 +217,13 @@ Lo que usan todas las apps y no pertenece a ningún dominio:
 
 | Carpeta | Contenido |
 | --- | --- |
-| `models.py` | Modelos abstractos base, p. ej. `ModeloConFechas` con `created_at`/`updated_at`. |
-| `api/` | Vistas y serializers base, mixins comunes. |
-| `excepciones/` | Excepción base del proyecto y el *exception handler* global de DRF. |
-| `pagination/` | Clases de paginación compartidas. |
+| `models.py` | Modelos abstractos base: `ModeloConFechas` (`creado_en`/`actualizado_en`) y `ModeloDelNegocio`, del que hereda todo lo que cuelga de un negocio. |
+| `api/` | Vistas y serializers base, y `MixinDelNegocio`: el único sitio del que sale el `negocio_id` del usuario autenticado. |
+| `excepciones/` | `ErrorDeNegocio`, los errores comunes a varias apps y el manejador global de DRF. |
+| `permisos/` | Permisos por rol que usan todas las apps: `EsAdministrador`, `EsCajeroOAdministrador`, `EsDelEquipo`. |
+| `paginacion/` | Clases de paginación compartidas. |
 | `middleware/` | Middlewares propios. |
-| `utils/` | Utilidades genéricas. |
+| `utilidades/` | Utilidades genéricas (fechas, formatos). |
 
 Si algo se usa en dos apps o más, probablemente va en `nucleo/`.
 

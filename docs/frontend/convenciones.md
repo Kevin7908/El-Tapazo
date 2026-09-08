@@ -9,7 +9,7 @@
 | Componentes | `PascalCase.jsx` | `ProductCard.jsx` |
 | Hooks | `camelCase` empezando por `use` | `useProducts.js` |
 | Utilidades y servicios | `camelCase.js` | `formatCurrency.js`, `productsApi.js` |
-| Carpetas | `camelCase` o `kebab-case`, consistente | `features/catalog/` |
+| Carpetas | `camelCase` o `kebab-case`, consistente | `modulos/catalogo/` |
 | Pruebas | igual que el archivo + `.test.jsx` | `ProductCard.test.jsx` |
 | Constantes | `MAYÚSCULAS` dentro del archivo | `MOVEMENT_TYPES` |
 
@@ -23,7 +23,8 @@ Un componente por archivo, y el nombre del archivo igual al del componente.
 - Componentes cortos: si pasa de ~150 líneas, hay que partirlo.
 - Separar el que **muestra** del que **trae datos**: la página busca los datos,
   el componente los recibe por props y los pinta.
-- Nada de lógica de negocio pesada dentro del JSX: sacarla a un hook o a `utils/`.
+- Nada de lógica de negocio pesada dentro del JSX: sacarla a un hook o a
+  `utilidades/`.
 
 ```jsx
 // TarjetaProducto.jsx

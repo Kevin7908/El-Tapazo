@@ -72,7 +72,21 @@ El-Tapaso/
 
 ## Estado
 
-Entorno y documentación listos. Del modelo de datos están implementados
-`negocios`, `usuarios` e `invitaciones`, y el catálogo (`categorias`,
-`proveedores`, `productos`, `productos_proveedores`). Faltan inventario,
-eventos y distribución, y todavía **no hay endpoints ni pantallas**.
+Entorno y documentación listos, y el modelo de datos **completo**: las 24
+tablas tienen su modelo de Django y su migración — `negocios`, `usuarios`,
+`invitaciones`, el catálogo (`categorias`, `proveedores`, `productos`,
+`productos_proveedores`), `clientes`, el inventario (`ubicaciones`,
+`existencias`, `movimientos_inventario`), el evento completo (`eventos`,
+`pulseras_nfc`, `dispositivos_nfc`, `grupos_evento`, `clientes_evento`,
+`pedidos_evento`, `detalle_pedido_evento`, `alertas_consumo`, `pagos_evento`) y
+la distribución (`clientes_distribucion`, `pedidos_distribucion`,
+`detalle_pedido_distribucion`, `pagos_distribucion`).
+
+Encima de las tablas está el **núcleo compartido** —permisos por rol, el mixin
+que saca el negocio del usuario autenticado y el manejador global de errores— y
+cuatro apps completas con su lógica y su API: `usuarios`, `catalogo`, `clientes`
+e `inventario`. El inventario ya descuenta, traslada, ajusta y anula con el
+kardex como fuente de verdad, y aguanta dos meseros vendiendo a la vez.
+
+Lo siguiente son `eventos` (la barra: cuentas, pulseras y cobro) y
+`distribucion` (el mayoreo). Todavía **no hay pantallas**.

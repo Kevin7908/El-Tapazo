@@ -44,19 +44,19 @@ Lo normal es usar el script `./dev.sh`, que además elige puertos libres:
 | Levantar solo el backend | `./dev.sh up backend` | `docker compose up -d backend` |
 | Aplicar migraciones | `./dev.sh migrate` | `docker compose exec backend python manage.py migrate` |
 | Crear migraciones | `./dev.sh makemigrations` | `docker compose exec backend python manage.py makemigrations` |
-| Crear migraciones de una app | `./dev.sh makemigrations catalog` | `... manage.py makemigrations catalog` |
+| Crear migraciones de una app | `./dev.sh makemigrations catalogo` | `... manage.py makemigrations catalogo` |
 | Crear superusuario | `./dev.sh superuser` | `docker compose exec backend python manage.py createsuperuser` |
 | Shell de Django | `./dev.sh shell` | `docker compose exec backend python manage.py shell` |
 | Terminal dentro del contenedor | `./dev.sh sh backend` | `docker compose exec backend bash` |
 | Crear una app nueva | `./dev.sh startapp ventas` | `docker compose exec backend python manage.py startapp ventas` |
 | Cualquier comando de manage.py | `./dev.sh manage <comando>` | `docker compose exec backend python manage.py <comando>` |
 | Correr las pruebas | `./dev.sh test back` | `docker compose exec backend pytest` |
-| Pruebas de una app | — | `docker compose exec backend pytest catalog` |
+| Pruebas de una app | — | `docker compose exec backend pytest catalogo` |
 | Cobertura | — | `docker compose exec backend pytest --cov` |
 | Revisar estilo | `./dev.sh lint` | `docker compose exec backend ruff check .` |
 | Formatear código | `./dev.sh format` | `docker compose exec backend ruff format .` |
 | Instalar una dependencia | Agrégala a `requirements/base.txt` y `./dev.sh up --build` | — |
-| Ver SQL de una migración | `./dev.sh manage sqlmigrate catalog 0001` | — |
+| Ver SQL de una migración | `./dev.sh manage sqlmigrate catalogo 0001` | — |
 | Verificar el proyecto | `./dev.sh manage check` | — |
 
 ---

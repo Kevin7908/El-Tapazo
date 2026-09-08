@@ -1,6 +1,6 @@
 # Crear una app nueva
 
-Receta para agregar un módulo de negocio (por ejemplo `sales` o `reports`)
+Receta para agregar un módulo de negocio (por ejemplo `ventas` o `informes`)
 manteniendo la estructura del proyecto.
 
 ---
@@ -11,7 +11,7 @@ manteniendo la estructura del proyecto.
 ./dev.sh startapp ventas
 ```
 
-Queda en `apps/backend-django/sales/` con la estructura mínima de Django.
+Queda en `apps/backend-django/ventas/` con la estructura mínima de Django.
 
 ---
 
@@ -49,8 +49,9 @@ En `config/settings/base.py`, dentro de `LOCAL_APPS`:
 
 ```python
 LOCAL_APPS = [
-    "core",
-    "accounts",
+    "nucleo",
+    "negocios",
+    "usuarios",
     ...
     "ventas",     # <- nueva
 ]
