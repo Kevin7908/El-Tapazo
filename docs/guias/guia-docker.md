@@ -76,8 +76,14 @@ Editar código **no** requiere reconstruir (está montado). Sí hay que hacer
 `docker compose build <servicio>` cuando cambia:
 
 - `requirements/*.txt` (backend)
-- `package.json` (frontend)
 - el `Dockerfile`
+
+El `package.json` del frontend **no** lo necesita. Al arrancar, el contenedor
+compara el `package-lock.json` con el de la última instalación y, si cambió,
+instala antes de levantar Vite (`apps/frontend-react/scripts/entrypoint.sh`).
+Hace falta porque `node_modules` vive en un volumen anónimo que sobrevive a los
+reinicios: sin ese paso, a quien hace `pull` le llega el `package.json` nuevo
+con los paquetes viejos.
 
 ```bash
 docker compose build backend && docker compose up -d backend

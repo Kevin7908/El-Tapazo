@@ -201,7 +201,7 @@ No siempre hace falta levantar todo.
 
 Los tres servicios deben salir en `Up` y la base de datos como `(healthy)`.
 Luego abre en el navegador la URL del frontend que imprime el script: debe
-aparecer la página inicial.
+aparecer la pantalla de iniciar sesión.
 
 ---
 
@@ -212,7 +212,7 @@ aparecer la página inicial.
 | `port is already allocated` | Ese puerto ya lo usa otro programa | Usa `./dev.sh up`: reasigna solo. A mano: cambia `BACKEND_PORT`, `FRONTEND_PORT` o `POSTGRES_PORT_HOST` en tu `.env` |
 | `permission denied ... docker.sock` | Tu usuario no está en el grupo docker | `sudo usermod -aG docker $USER` y reinicia sesión |
 | El backend no conecta a la base de datos | La BD todavía arrancaba | `./dev.sh restart` |
-| Instalé una dependencia nueva y no aparece | La imagen quedó vieja | `./dev.sh up --build` |
+| Alguien agregó una dependencia de Python y no aparece | La imagen del backend quedó vieja | `./dev.sh up --build`. Las del frontend no hace falta: se instalan solas al levantar |
 | (Windows) Se repite "no se encontró Python... Microsoft Store" al buscar puertos | El `python3` que trae Windows es un acceso directo a la Store, no Python | Ya está resuelto en `dev.sh`: actualiza la rama. Si aún lo ves, desactiva el alias en *Configuración > Aplicaciones > Alias de ejecución de aplicaciones* |
 | (Windows) `$'\r': command not found` al correr `./dev.sh` | El repo se clonó con finales de línea CRLF | `git config --global core.autocrlf input`, luego `git rm --cached -r .` y `git reset --hard` dentro del proyecto |
 | (Windows) `exec /usr/local/bin/entrypoint.sh: no such file or directory` | Lo mismo: CRLF dentro del contenedor | Igual que la fila anterior, y después `./dev.sh up --build` |

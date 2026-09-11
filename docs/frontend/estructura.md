@@ -30,6 +30,7 @@ apps/frontend-react/
 │   │
 │   ├── modulos/            EL NÚCLEO: una carpeta por módulo del negocio
 │   │   ├── autenticacion/
+│   │   ├── tablero/
 │   │   ├── catalogo/
 │   │   ├── inventario/
 │   │   ├── eventos/
@@ -41,7 +42,7 @@ apps/frontend-react/
 │   ├── paginas/            Páginas globales que no son de ningún módulo (404, Inicio)
 │   ├── rutas/              Definición de rutas y protección de las privadas
 │   ├── estado/             Estado global compartido
-│   ├── estilos/            Estilos globales y variables de diseño
+│   ├── estilos/            Tailwind y la paleta de colores (globales.css)
 │   ├── utilidades/         Funciones auxiliares puras (formatear moneda, fechas)
 │   └── pruebas/            Configuración y utilidades de pruebas
 │
@@ -66,6 +67,7 @@ Cada carpeta de `modulos/` es autocontenida:
 ```
 modulos/catalogo/
 ├── api/            Llamadas HTTP de este módulo (obtenerProductos, crearProducto)
+├── dtos/           Traducen el JSON de la API a objetos de la aplicación, y al revés
 ├── componentes/    Componentes que solo usa este módulo (FormularioProducto)
 ├── hooks/          Hooks del módulo (useProductos)
 ├── paginas/        Pantallas completas (PaginaListaProductos)
@@ -102,6 +104,11 @@ mismo, ese código sube un nivel.
 
 El componente no llama a `axios` directamente: llama a un hook. El hook llama a
 la capa `api/`. Así, si cambia un endpoint, se toca un solo archivo.
+
+La capa `api/` no devuelve el JSON tal cual: lo pasa por un DTO de `dtos/`
+(`productoDesdeApi`, `credencialesHaciaApi`). La API habla en `snake_case` y la
+aplicación en `camelCase`; si mañana cambia un campo del contrato, se toca el
+DTO y ninguna pantalla se entera.
 
 ---
 
@@ -156,9 +163,10 @@ un módulo van en `modulos/<x>/hooks/`.
 
 ### `paginas/`
 
-Páginas que no pertenecen a ningún módulo: `PaginaInicio`,
-`PaginaNoEncontrada`, `PaginaSinPermiso`. Las páginas de negocio viven en
-`modulos/<x>/paginas/`.
+Páginas que no pertenecen a ningún módulo: `PaginaNoEncontrada` y
+`PaginaEnConstruccion`, la que ve una sección del menú que todavía no tiene
+pantalla. Las páginas de negocio viven en `modulos/<x>/paginas/`; el tablero
+de inicio, en `modulos/tablero/`.
 
 ### `rutas/`
 
@@ -173,8 +181,10 @@ Query. El estado global es solo para la interfaz.
 
 ### `estilos/`
 
-`globales.css` con el reset y las variables CSS (colores, espaciados,
-tipografía).
+`globales.css` importa Tailwind y declara en `@theme` todo lo que consume el
+resto de la aplicación: **la paleta de colores**, la fuente, los tamaños de texto
+y las animaciones del diseño. Es el único sitio donde se escribe un color. Ver
+[convenciones](convenciones.md#estilos).
 
 ### `utilidades/`
 
@@ -209,10 +219,11 @@ que el editor lo autocomplete).
 | Una pantalla nueva de productos | `modulos/catalogo/paginas/` |
 | El formulario de esa pantalla | `modulos/catalogo/componentes/` |
 | Llamar al endpoint de productos | `modulos/catalogo/api/` |
+| Traducir lo que manda o recibe ese endpoint | `modulos/catalogo/dtos/` |
 | Traer y cachear esos datos | `modulos/catalogo/hooks/` (con React Query) |
 | Un botón que se usa en toda la app | `componentes/ui/` |
 | Una tabla reutilizable | `componentes/comunes/` |
 | Formatear pesos colombianos | `utilidades/` |
 | Guardar el usuario con sesión iniciada | `estado/` |
 | Registrar una ruta nueva | `rutas/index.jsx` |
-| Un color o espaciado del diseño | `estilos/globales.css` |
+| Un color, tamaño de texto o animación del diseño | `estilos/globales.css`, dentro de `@theme` |

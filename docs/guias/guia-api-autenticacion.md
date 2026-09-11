@@ -22,8 +22,8 @@ corriendo). Este documento explica lo que ahí no cabe: el *por qué* y el
 2. [Cómo funciona la sesión](#2-cómo-funciona-la-sesión)
 3. [Los endpoints](#3-los-endpoints)
 4. [Los errores](#4-los-errores)
-5. [Las pantallas que tiene que crear el frontend](#5-las-pantallas-que-tiene-que-crear-el-frontend)
-6. [Cómo montarlo en React](#6-cómo-montarlo-en-react)
+5. [Las pantallas del frontend](#5-las-pantallas-del-frontend)
+6. [Cómo está montado en React](#6-cómo-está-montado-en-react)
 7. [Checklist antes del PR](#7-checklist-antes-del-pr)
 
 ---
@@ -248,6 +248,17 @@ El enlace sirve **una sola vez**. Abrirlo dos veces devuelve `enlace_invalido`;
 en esa pantalla, muestra *"Este enlace ya se usó o venció"* y un botón para
 iniciar sesión.
 
+## Qué contraseña se acepta
+
+Mínimo **6 caracteres**, con **al menos una letra** y **al menos un número**.
+Nada más. Vale para los tres caminos por los que se elige una: aceptar la
+invitación, restablecerla desde el enlace y cambiarla estando dentro.
+
+Si no cumple, `400` con `contrasena_insegura` y **todos los motivos a la vez** en
+`detalles.errores`. El formulario enseña las mismas tres reglas antes de enviar
+(`modulos/autenticacion/utilidades/reglasDeContrasena.js`): si cambian en el
+backend (`AUTH_PASSWORD_VALIDATORS`), cambian ahí.
+
 ## Aceptar una invitación
 
 **Paso 1 — enseñar de qué es.** `GET /invitaciones/pendiente/?token=...`
@@ -339,7 +350,7 @@ en el interceptor, y los componentes solo miran el `codigo`:
     "codigo": "contrasena_insegura",
     "mensaje": "La contraseña no cumple los requisitos mínimos.",
     "detalles": {
-      "errores": ["Esta contraseña es demasiado corta. Debe contener al menos 8 caracteres."]
+      "errores": ["Esta contraseña es demasiado corta. Debe contener al menos 6 caracteres."]
     }
   }
 }
@@ -396,19 +407,23 @@ en el interceptor, y los componentes solo miran el `codigo`:
 
 ---
 
-# 5. Las pantallas que tiene que crear el frontend
+# 5. Las pantallas del frontend
 
-Los correos que manda el backend apuntan al frontend, no a la API. Estas tres
-rutas **tienen que existir** o los enlaces no llevarán a ninguna parte:
+Están las cinco, en `modulos/autenticacion/paginas/`, con sus rutas en
+`configuracion/rutas.js`. Los correos que manda el backend apuntan al frontend,
+no a la API: las tres que abre un enlace **no pueden cambiar de ruta** sin
+cambiar también `usuarios/servicios/correos.py`.
 
 | Ruta | Parámetros en la URL | Qué hace |
 | --- | --- | --- |
+| `/acceso` | — | Iniciar sesión |
+| `/recuperar-contrasena` | — | Pedir el enlace de «olvidé mi contraseña» |
 | `/invitacion` | `?token=` | Muestra la invitación y pide nombre, apellido, teléfono y contraseña |
 | `/nueva-contrasena` | `?uid=` y `?token=` | Pide la contraseña nueva |
-| `/verificar-correo` | `?uid=` y `?token=` | Confirma sola al montarse y avisa del resultado |
+| `/verificar-correo` | `?uid=` y `?token=` | Confirma sola al abrirse y avisa; sin enlace, deja pedir otro |
 
-Las tres son **públicas**: quien las abre todavía no tiene sesión. No las metas
-detrás de `RutaProtegida`.
+Las cinco son **públicas**: quien las abre todavía no tiene sesión. Viven bajo
+`PlantillaAcceso`, no detrás de `RutaProtegida`.
 
 La base de esos enlaces la fija la variable `URL_FRONTEND` del `.env` del
 backend. En desarrollo es `http://localhost:5173`.
@@ -425,193 +440,96 @@ Cómo disparar cada correo y qué comprobar está en la
 
 ---
 
-# 6. Cómo montarlo en React
+# 6. Cómo está montado en React
 
 Siguiendo [la estructura acordada](../frontend/estructura.md):
 
 ```
 src/
-├── librerias/clienteApi.js          ← los interceptores, una sola vez
+├── librerias/clienteApi.js          ← el token en cada petición y la renovación, una sola vez
 ├── estado/sesion.js                 ← el usuario y los tokens
+├── utilidades/errores.js            ← leer el código, el mensaje y los errores por campo
 ├── rutas/RutaProtegida.jsx
+├── plantillas/PlantillaAcceso.jsx   ← la tinta, el panel de marca y la columna del formulario
 └── modulos/autenticacion/
-    ├── api/apiAutenticacion.js      ← el ÚNICO archivo que conoce estas URLs
-    ├── hooks/useSesion.js
+    ├── api/                         ← los ÚNICOS archivos que conocen estas URLs
+    │   ├── apiSesiones.js
+    │   ├── apiContrasenas.js
+    │   ├── apiVerificacion.js
+    │   └── apiInvitaciones.js
+    ├── dtos/                        ← snake_case de la API ↔ camelCase de la aplicación
+    ├── hooks/                       ← un hook por caso de uso, con React Query
+    ├── componentes/
+    ├── utilidades/                  ← reglas de contraseña y validación de formato
     └── paginas/
-        ├── PaginaAcceso.jsx
+        ├── PaginaIniciarSesion.jsx
+        ├── PaginaAceptarInvitacion.jsx
         ├── PaginaRecuperarContrasena.jsx
         ├── PaginaNuevaContrasena.jsx
-        ├── PaginaVerificarCorreo.jsx
-        └── PaginaAceptarInvitacion.jsx
+        └── PaginaVerificarCorreo.jsx
 ```
 
-## La capa `api/` — nadie más conoce las URLs
+El código es la referencia. Aquí va lo que no se ve leyéndolo.
+
+## La capa `api/` no devuelve el JSON tal cual
+
+Cada función traduce con su DTO lo que manda y lo que recibe:
 
 ```js
-// modulos/autenticacion/api/apiAutenticacion.js
-import { clienteApi } from '@/librerias/clienteApi'
-
+// modulos/autenticacion/api/apiSesiones.js
 export const iniciarSesion = (credenciales) =>
-  clienteApi.post('/usuarios/sesiones/', credenciales).then((r) => r.data)
-
-export const obtenerUsuarioActual = () =>
-  clienteApi.get('/usuarios/yo/').then((r) => r.data)
-
-export const cerrarSesion = (refresco) =>
-  clienteApi.post('/usuarios/sesiones/cierre/', { refresco })
-
-export const pedirRecuperacion = (correo) =>
-  clienteApi.post('/usuarios/contrasena/recuperacion/', { correo })
-
-export const restablecerContrasena = (datos) =>
-  clienteApi.post('/usuarios/contrasena/restablecimiento/', datos)
-
-export const obtenerInvitacion = (token) =>
-  clienteApi.get('/usuarios/invitaciones/pendiente/', { params: { token } }).then((r) => r.data)
-
-export const aceptarInvitacion = (datos) =>
-  clienteApi.post('/usuarios/invitaciones/aceptacion/', datos).then((r) => r.data)
+  clienteApi
+    .post('/usuarios/sesiones/', credencialesHaciaApi(credenciales))
+    .then((respuesta) => sesionDesdeApi(respuesta.data))
 ```
 
-Ningún componente llama a `axios` ni a `fetch`. Si mañana cambia una ruta, se
-toca **este** archivo y nada más.
+Así `es_administrador` se lee `esAdministrador` en toda la aplicación, y si
+mañana cambia un campo del contrato se toca un DTO y nada más.
 
 ## El interceptor que renueva solo
 
-Este es el archivo delicado. Lo escribe **una persona, una vez**, y el resto del
-equipo no lo vuelve a mirar.
+Está en `librerias/clienteApi.js`. Tres cosas que no hay que romper:
 
-```js
-// librerias/clienteApi.js
-import axios from 'axios'
-
-import { entorno } from '@/configuracion/entorno'
-import { leerRefresco, guardarSesion, borrarSesion } from '@/estado/sesion'
-
-export const clienteApi = axios.create({
-  baseURL: entorno.urlApi,
-  headers: { 'Content-Type': 'application/json' },
-  timeout: 15000,
-})
-
-// El acceso vive en memoria: es el que más cambia y el que menos dura.
-let tokenDeAcceso = null
-export const fijarTokenDeAcceso = (token) => { tokenDeAcceso = token }
-
-clienteApi.interceptors.request.use((config) => {
-  if (tokenDeAcceso) config.headers.Authorization = `Bearer ${tokenDeAcceso}`
-  return config
-})
-
-// Una sola renovación a la vez. Si dos peticiones fallan juntas y cada una
-// renovara por su cuenta, la segunda usaría un refresco ya anulado —el backend
-// los rota— y sacaría al usuario de la aplicación.
-let renovacionEnCurso = null
-
-const renovar = () => {
-  renovacionEnCurso ??= axios
-    .post(`${entorno.urlApi}/usuarios/sesiones/renovacion/`, { refresco: leerRefresco() })
-    .then(({ data }) => {
-      fijarTokenDeAcceso(data.acceso)
-      guardarSesion({ refresco: data.refresco })
-      return data.acceso
-    })
-    .finally(() => { renovacionEnCurso = null })
-  return renovacionEnCurso
-}
-
-clienteApi.interceptors.response.use(
-  (respuesta) => respuesta,
-  async (error) => {
-    const peticion = error.config
-    const codigo = error.response?.data?.error?.codigo
-
-    // Solo se renueva cuando caducó el acceso, y solo una vez por petición.
-    if (codigo === 'no_autenticado' && !peticion._reintentada && leerRefresco()) {
-      peticion._reintentada = true
-      try {
-        peticion.headers.Authorization = `Bearer ${await renovar()}`
-        return clienteApi(peticion)
-      } catch {
-        borrarSesion()
-        window.location.href = '/acceso'
-      }
-    }
-    return Promise.reject(error)
-  },
-)
-```
-
-⚠️ **No reintentes con `credenciales_invalidas` ni con `sesion_invalida`.** Esos
-no se arreglan renovando: el primero es una contraseña mal escrita y el segundo
-es una sesión muerta.
+- **Una sola renovación a la vez.** Si dos peticiones fallan con `401` juntas y
+  cada una renovara por su cuenta, la segunda usaría un refresco ya anulado —el
+  backend los rota— y sacaría al usuario de la aplicación.
+- **Solo se renueva con `no_autenticado`**, y una vez por petición. Con
+  `credenciales_invalidas` o `sesion_invalida` no: renovar no los arregla.
+- Si la renovación falla, se borra la sesión y se manda a `/acceso`.
 
 ## Mostrar el error de la API
 
-```js
-// utilidades/errores.js
-const MENSAJE_POR_DEFECTO = 'No se pudo completar la operación. Intenta de nuevo.'
-
-/** El mensaje que ya viene listo para una persona. */
-export const mensajeDeError = (error) =>
-  error?.response?.data?.error?.mensaje ?? MENSAJE_POR_DEFECTO
-
-/** El código estable, para reaccionar distinto según el caso. */
-export const codigoDeError = (error) => error?.response?.data?.error?.codigo
-
-/** Los errores por campo, para pintarlos bajo cada input. */
-export const erroresDeCampo = (error) => error?.response?.data?.error?.detalles ?? {}
-```
-
-Con eso, una pantalla queda así:
-
-```jsx
-const { mutate, isPending, error } = useMutation({ mutationFn: iniciarSesion })
-
-{codigoDeError(error) === 'correo_no_verificado' ? (
-  <BotonReenviarVerificacion correo={correo} />
-) : (
-  error && <p role="alert">{mensajeDeError(error)}</p>
-)}
-```
+`utilidades/errores.js` tiene las cuatro funciones que usan las pantallas:
+`codigoDeError` para decidir, `mensajeDeError` para mostrar, `erroresDeCampo`
+para pintar bajo cada input y `esErrorDeConexion` para distinguir «no hubo
+respuesta» de «el backend dijo que no». Ningún componente lee `error.response` a
+mano.
 
 ## Los tres estados, siempre
 
-Como dicen las convenciones: **cargando, error y vacío**. Una lista de
-invitaciones sin el "todavía no has invitado a nadie" se siente rota.
-
-```jsx
-if (isLoading) return <Cargando />
-if (error) return <Aviso>{mensajeDeError(error)}</Aviso>
-if (!datos.results.length) return <Vacio>Todavía no has invitado a nadie.</Vacio>
-```
+Como dicen las convenciones: **cargando, error y vacío**. En estas pantallas el
+«cargando» es un esqueleto con la forma de lo que va a llegar
+(`EsqueletoDeAcceso`), tanto mientras se descarga la pantalla como mientras se
+busca la invitación.
 
 ## Qué va en React Query y qué en `estado/`
 
 | Dato | Dónde |
 | --- | --- |
-| La lista de invitaciones | **React Query** (`useQuery`) — viene del servidor |
+| La invitación pendiente, confirmar el correo | **React Query** (`useQuery`) — viene del servidor |
+| Iniciar sesión, aceptar, recuperar y restablecer | **React Query** (`useMutation`) |
 | El usuario con sesión abierta | `estado/sesion.js` — es estado de interfaz |
-| Los tokens | `estado/sesion.js` (refresco) y memoria (acceso) |
+| Los tokens | `estado/sesion.js`: el refresco en `localStorage`, el acceso en memoria |
 
-El error más común es meter la respuesta de un `GET` en un store global. Eso ya
-lo hace React Query, con caché, `isLoading` y revalidación incluidos.
+Confirmar el correo es un `POST` y aun así va con `useQuery`: el enlace sirve una
+sola vez, y con un `useEffect` el modo estricto de React lo mandaría dos veces al
+montar. La segunda respondería `enlace_invalido` sobre un correo recién
+verificado.
 
 ## Rutas protegidas
 
-```jsx
-// rutas/RutaProtegida.jsx
-export default function RutaProtegida({ rolesPermitidos, children }) {
-  const { usuario, cargando } = useSesion()
-
-  if (cargando) return <Cargando />
-  if (!usuario) return <Navigate to="/acceso" replace />
-  if (rolesPermitidos && !rolesPermitidos.includes(usuario.rol)) {
-    return <Navigate to="/sin-permiso" replace />
-  }
-  return children
-}
-```
+`rutas/RutaProtegida.jsx` deja pasar solo con la sesión abierta. Tras un F5
+recupera el usuario con `GET /yo/` antes de decidir.
 
 > Esconder un botón **no es seguridad**: el backend comprueba el rol en cada
 > petición y devuelve `403` o `404` igual. Esto es comodidad para el usuario,

@@ -37,7 +37,7 @@ El circuito real es este:
 
 1. [Cómo se prueba un flujo, de principio a fin](#1-cómo-se-prueba-un-flujo-de-principio-a-fin)
 2. [Cómo disparar cada correo](#2-cómo-disparar-cada-correo)
-3. [Probar el token sin las pantallas del frontend](#3-probar-el-token-sin-las-pantallas-del-frontend)
+3. [Probar el token a mano, sin el navegador](#3-probar-el-token-a-mano-sin-el-navegador)
 4. [Las cuatro comprobaciones que importan](#4-las-cuatro-comprobaciones-que-importan)
 5. [Problemas frecuentes](#5-problemas-frecuentes)
 6. [Si de verdad necesitas enviar correos](#6-si-de-verdad-necesitas-enviar-correos)
@@ -118,12 +118,12 @@ También responde **202** siempre, por lo mismo.
 
 ---
 
-# 3. Probar el token sin las pantallas del frontend
+# 3. Probar el token a mano, sin el navegador
 
-Mientras el frontend no tenga las pantallas `/invitacion`,
-`/nueva-contrasena` y `/verificar-correo`, el enlace del correo no lleva a
-ninguna parte. Puedes probar el token igual, llamando a la API a mano: copia el
-enlace desde la bandeja y saca los parámetros.
+Lo normal es hacer clic en el enlace: las pantallas `/invitacion`,
+`/nueva-contrasena` y `/verificar-correo` ya existen y hacen todo solas. Si
+quieres probar solo el backend, llama a la API a mano: copia el enlace desde la
+bandeja y saca los parámetros.
 
 ## Aceptar una invitación
 

@@ -94,5 +94,8 @@ entregar, lo vuelve a despachar y lo cobra por abonos, avisando de quién se
 pasó del plazo; y por encima de todo, el staff da de alta y suspende negocios,
 y el administrador ve cuánto puso cada canal.
 
-**El backend está completo** (342 pruebas en verde). Lo siguiente son las
-**pantallas**: todavía no hay ninguna.
+**El backend está completo** (348 pruebas en verde) y ya están las **cinco
+pantallas de identidad** —iniciar sesión, aceptar la invitación, recuperar la
+contraseña, poner la nueva y verificar el correo—, con Tailwind, la paleta del
+diseño y su esqueleto de carga (48 pruebas en verde). Lo siguiente son las
+pantallas de la operación.

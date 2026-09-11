@@ -58,6 +58,9 @@ revalidación.
 
 - Nunca `axios` ni `fetch` directo dentro de un componente.
 - La capa `modulos/<x>/api/` es la única que conoce las URLs.
+- Lo que entra y sale pasa por `modulos/<x>/dtos/`: la API habla en
+  `snake_case` y la aplicación en `camelCase`, y la traducción vive en un solo
+  sitio, un archivo por concepto.
 - Los hooks envuelven esas funciones con React Query.
 - La URL base sale de `configuracion/entorno.js`, jamás escrita a mano.
 
@@ -65,8 +68,12 @@ revalidación.
 // modulos/catalogo/api/apiProductos.js
 import { clienteApi } from '@/librerias/clienteApi'
 
+import { productoDesdeApi } from '../dtos/producto'
+
 export const obtenerProductos = (params) =>
-  clienteApi.get('/catalogo/productos/', { params }).then((r) => r.data)
+  clienteApi
+    .get('/catalogo/productos/', { params })
+    .then((respuesta) => respuesta.data.results.map(productoDesdeApi))
 ```
 
 ```js
@@ -93,9 +100,31 @@ vacío. Una tabla sin el mensaje de "no hay resultados" se siente rota.
 
 ## Estilos
 
-- Variables CSS en `estilos/globales.css` para colores, espaciados y tipografía.
-- Nada de colores escritos a mano dentro de los componentes.
-- Diseño responsive: la app se va a usar también desde el celular en la bodega.
+Con **Tailwind CSS 4**: clases directamente en el JSX, sin archivos `.css` por
+pantalla.
+
+- **La paleta vive en `estilos/globales.css`**, dentro de `@theme`, y es la única
+  que existe: `--color-*: initial` borra la de Tailwind. `bg-azul-950` funciona;
+  `bg-blue-500` ni siquiera se genera. Si falta un tono, se agrega ahí con nombre.
+- Nada de colores escritos a mano dentro de los componentes, ni en `className`
+  (`bg-[#112853]`) ni en `style`.
+- Lo mismo con los tamaños de texto y las animaciones que no están en la escala
+  de Tailwind: se declaran en `@theme` (`text-titulo`, `animate-brillo`).
+- La fuente es **Inter**, instalada con npm (`@fontsource-variable/inter`): no se
+  descarga nada a mano y funciona sin internet.
+- Pensado primero para el celular, que es desde donde entra casi todo el mundo;
+  lo de escritorio se agrega con `lg:`.
+
+### Íconos
+
+Con **Phosphor** (`@phosphor-icons/react`), instalado con npm: no se descarga
+ningún paquete a mano. Cada ícono se importa por su nombre con el sufijo `Icon`
+(`import { BellIcon } from '@phosphor-icons/react'`), toma el color del texto
+(`currentColor`) y el tamaño con `size`.
+
+- Si el ícono acompaña a un texto, es decoración: `aria-hidden`.
+- Si es la única pista de lo que hace un botón, el botón lleva `aria-label`.
+- Las secciones del menú y sus íconos están en `configuracion/menu.js`.
 
 ---
 
@@ -124,7 +153,26 @@ implementación:
 docker compose exec frontend npm run test
 ```
 
-Prioridad: utilidades puras, hooks con lógica y componentes de formulario.
+Prioridad: utilidades puras, DTOs, hooks con lógica y componentes de formulario.
+
+Una pantalla se prueba sin backend: se simula su capa `api/` con `vi.mock`, se
+monta con `renderizarEnRuta` de `src/pruebas/` y los errores de la API se
+fabrican con `errorDeApi`. Ver las pruebas de `modulos/autenticacion/paginas/`.
+
+---
+
+## Dependencias
+
+Se instalan dentro del contenedor, y `package.json` y `package-lock.json` se
+suben juntos:
+
+```bash
+docker compose exec frontend npm install <paquete>
+```
+
+Al resto del equipo le llegan con un `./dev.sh up`, sin `--build`: el contenedor
+compara el `package-lock.json` con el de la última instalación y, si cambió,
+instala antes de arrancar Vite (`scripts/entrypoint.sh`).
 
 ---
 
