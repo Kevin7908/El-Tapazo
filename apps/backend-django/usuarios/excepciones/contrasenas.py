@@ -4,7 +4,7 @@ from nucleo.excepciones import ErrorDeNegocio
 
 
 class ContrasenaInsegura(ErrorDeNegocio):
-    """No pasó los validadores de Django (corta, común, solo números…).
+    """No pasó los validadores de Django (corta, sin letras o sin números).
 
     Los motivos concretos van en `detalles`, para que el formulario los pinte
     todos de una vez en vez de uno por intento.

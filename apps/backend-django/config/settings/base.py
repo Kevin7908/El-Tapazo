@@ -120,11 +120,16 @@ AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.AllowAllUsersModelBacke
 # correo. Django lo usa para firmar y comprobar esos tokens.
 PASSWORD_RESET_TIMEOUT = env.int("VIGENCIA_ENLACES_HORAS", default=24) * 60 * 60
 
+# Seis caracteres con letras y números, y nada más: es la regla que decidió el
+# equipo. El formulario del frontend enseña las mismas tres condiciones antes de
+# enviar (`modulos/autenticacion/utilidades/reglasDeContrasena.js`): si cambia
+# una, cambia la otra.
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 6},
+    },
+    {"NAME": "usuarios.validadores.contrasenas.ValidadorDeLetrasYNumeros"},
 ]
 
 # --------------------------------------------------------------------------- #
