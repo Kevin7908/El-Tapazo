@@ -54,6 +54,7 @@ services:
       VIGENCIA_INVITACION_DIAS: ${VIGENCIA_INVITACION_DIAS:-7}
       MINUTOS_TOKEN_ACCESO: ${MINUTOS_TOKEN_ACCESO:-15}
       DIAS_TOKEN_REFRESCO: ${DIAS_TOKEN_REFRESCO:-7}
+      LIMITE_PUNTO_DE_CONTROL: ${LIMITE_PUNTO_DE_CONTROL:-60/min}
     depends_on:
       db:
         condition: service_healthy

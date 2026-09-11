@@ -168,6 +168,9 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "inicio_sesion": env("LIMITE_INICIO_SESION", default="10/min"),
         "correos_salientes": env("LIMITE_CORREOS_SALIENTES", default="5/hour"),
+        # Sin freno, cualquiera con un lector de tres dólares puede ir
+        # preguntándole al sistema cuánto debe cada persona del bar.
+        "punto_de_control": env("LIMITE_PUNTO_DE_CONTROL", default="60/min"),
     },
 }
 
@@ -182,6 +185,10 @@ SPECTACULAR_SETTINGS = {
     "ENUM_NAME_OVERRIDES": {
         "TipoDeUbicacion": "inventario.models.TIPOS_DE_UBICACION",
         "TipoDeMovimiento": "inventario.models.TIPOS_DE_MOVIMIENTO",
+        "EstadoDeEvento": "eventos.models.ESTADOS_DE_EVENTO",
+        "EstadoDeGrupo": "eventos.models.ESTADOS_DE_GRUPO",
+        "EstadoDePedidoEvento": "eventos.models.ESTADOS_DE_PEDIDO_EVENTO",
+        "EstadoDePulsera": "eventos.models.ESTADOS_DE_PULSERA",
     },
 }
 

@@ -811,3 +811,14 @@ class PagoEvento(ModeloDelNegocio):
     def es_de_mostrador(self) -> bool:
         """Salda una venta que se pagó al instante, sin cuenta abierta."""
         return self.pedido_evento_id is not None
+
+
+# Cuatro modelos de esta app tienen un campo `estado` y sus listas de valores no
+# son la misma. Sin estos nombres el esquema de la API los bautiza
+# `Estado58fEnum`, que no le dice nada a quien genera el cliente del frontend.
+# Se exponen a nivel de módulo porque `ENUM_NAME_OVERRIDES` resuelve
+# `modulo.atributo`, no atributos de una clase anidada.
+ESTADOS_DE_EVENTO = Evento.Estado.choices
+ESTADOS_DE_GRUPO = GrupoEvento.Estado.choices
+ESTADOS_DE_PEDIDO_EVENTO = PedidoEvento.Estado.choices
+ESTADOS_DE_PULSERA = PulseraNfc.Estado.choices
