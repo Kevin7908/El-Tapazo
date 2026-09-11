@@ -338,3 +338,8 @@ class PagoDistribucion(ModeloDelNegocio):
 
     def __str__(self) -> str:
         return f"{self.monto} — {self.pedido_distribucion}"
+
+
+# Ver el comentario de `ENUM_NAME_OVERRIDES` en `config/settings/base.py`:
+# varios campos se llaman `estado` y el esquema necesita distinguirlos.
+ESTADOS_DE_PEDIDO_DISTRIBUCION = PedidoDistribucion.Estado.choices

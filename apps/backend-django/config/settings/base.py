@@ -189,6 +189,7 @@ SPECTACULAR_SETTINGS = {
         "EstadoDeGrupo": "eventos.models.ESTADOS_DE_GRUPO",
         "EstadoDePedidoEvento": "eventos.models.ESTADOS_DE_PEDIDO_EVENTO",
         "EstadoDePulsera": "eventos.models.ESTADOS_DE_PULSERA",
+        "EstadoDePedidoDistribucion": "distribucion.models.ESTADOS_DE_PEDIDO_DISTRIBUCION",
     },
 }
 
