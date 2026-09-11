@@ -11,6 +11,8 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
+from negocios.excepciones import NegocioNoEncontrado
+from negocios.repositorios import negocios as repositorio_de_negocios
 from usuarios.dtos import AceptacionDeInvitacionDTO, SesionDTO
 from usuarios.excepciones import (
     CorreoYaRegistrado,
@@ -32,9 +34,16 @@ def crear_invitacion(*, negocio_id: int, correo: str, rol: str, invitada_por_id:
     """Invita a alguien a trabajar en un negocio y le manda el enlace.
 
     Raises:
+        NegocioNoEncontrado: no hay ningún negocio con ese id.
         CorreoYaRegistrado: ese correo ya tiene cuenta.
         YaHayInvitacionPendiente: ya se le invitó y no ha aceptado.
     """
+    # Desde la API el negocio sale del administrador autenticado y siempre
+    # existe; desde `invitar_administrador` lo escribe una persona. Sin esta
+    # comprobación, la clave foránea —diferida hasta el commit— reventaría como
+    # un IntegrityError en vez de decir qué pasó.
+    if repositorio_de_negocios.obtener(negocio_id=negocio_id) is None:
+        raise NegocioNoEncontrado
     correo = correo.strip().lower()
     if repositorio_de_usuarios.existe_con_correo(correo=correo):
         raise CorreoYaRegistrado

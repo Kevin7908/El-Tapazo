@@ -11,6 +11,8 @@ A partir de ahí, ese administrador invita a su equipo desde la aplicación.
 
 from django.core.management.base import BaseCommand, CommandError
 
+from negocios.excepciones import NegocioNoEncontrado
+from nucleo.excepciones import ErrorDeNegocio
 from usuarios.models import Rol, Usuario
 from usuarios.servicios import invitaciones as servicio
 
@@ -19,7 +21,12 @@ class Command(BaseCommand):
     help = "Invita al primer administrador de un negocio (staff de la plataforma)."
 
     def add_arguments(self, parser) -> None:
-        parser.add_argument("--negocio", type=int, required=True, help="Id del negocio.")
+        parser.add_argument(
+            "--negocio",
+            type=int,
+            required=True,
+            help="Id numérico del negocio: el que aparece en su URL del admin de Django.",
+        )
         parser.add_argument("--correo", required=True, help="Correo del administrador.")
         parser.add_argument(
             "--invita",
@@ -33,12 +40,21 @@ class Command(BaseCommand):
 
     def handle(self, *args, **opciones) -> None:
         staff = self._obtener_staff(opciones["invita"])
-        invitacion = servicio.crear_invitacion(
-            negocio_id=opciones["negocio"],
-            correo=opciones["correo"],
-            rol=Rol.ADMINISTRADOR,
-            invitada_por_id=staff.pk,
-        )
+        try:
+            invitacion = servicio.crear_invitacion(
+                negocio_id=opciones["negocio"],
+                correo=opciones["correo"],
+                rol=Rol.ADMINISTRADOR,
+                invitada_por_id=staff.pk,
+            )
+        except NegocioNoEncontrado as exc:
+            raise CommandError(
+                f"No hay ningún negocio con el id {opciones['negocio']}. Créalo en el admin "
+                "de Django (Negocios › Añadir) y usa el número que aparece en su URL."
+            ) from exc
+        except ErrorDeNegocio as exc:
+            raise CommandError(exc.mensaje) from exc
+
         self.stdout.write(
             self.style.SUCCESS(
                 f"Invitación enviada a {invitacion.correo} "

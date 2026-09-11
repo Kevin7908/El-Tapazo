@@ -11,6 +11,7 @@ import pytest
 from django.core import mail
 from django.utils import timezone
 
+from negocios.excepciones import NegocioNoEncontrado
 from negocios.models import Negocio
 from negocios.pruebas.fabricas import FabricaDeNegocio
 from usuarios.dtos import AceptacionDeInvitacionDTO
@@ -34,6 +35,7 @@ from usuarios.pruebas.fabricas import (
     CONTRASENA,
     FabricaDeAdministrador,
     FabricaDeInvitacion,
+    FabricaDeStaffDePlataforma,
     FabricaDeUsuario,
 )
 from usuarios.servicios import (
@@ -300,6 +302,23 @@ def test_no_se_puede_invitar_a_alguien_que_ya_tiene_cuenta():
             rol=Rol.MESERO,
             invitada_por_id=administrador.pk,
         )
+
+
+def test_no_se_puede_invitar_a_un_negocio_que_no_existe():
+    # En una prueba la transacción nunca se confirma, así que sin la
+    # comprobación del servicio la clave foránea diferida no saltaría y la
+    # invitación huérfana quedaría creada.
+    staff = FabricaDeStaffDePlataforma()
+
+    with pytest.raises(NegocioNoEncontrado):
+        invitaciones.crear_invitacion(
+            negocio_id=999_999,
+            correo="nadie@tapaso.test",
+            rol=Rol.ADMINISTRADOR,
+            invitada_por_id=staff.pk,
+        )
+
+    assert not Invitacion.objects.exists()
 
 
 def test_aceptar_la_invitacion_crea_al_usuario_ya_verificado():
