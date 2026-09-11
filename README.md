@@ -84,9 +84,15 @@ la distribución (`clientes_distribucion`, `pedidos_distribucion`,
 
 Encima de las tablas está el **núcleo compartido** —permisos por rol, el mixin
 que saca el negocio del usuario autenticado y el manejador global de errores— y
-cuatro apps completas con su lógica y su API: `usuarios`, `catalogo`, `clientes`
-e `inventario`. El inventario ya descuenta, traslada, ajusta y anula con el
-kardex como fuente de verdad, y aguanta dos meseros vendiendo a la vez.
+**las siete apps completas** con su lógica y su API: `negocios`, `usuarios`,
+`catalogo`, `clientes`, `inventario`, `eventos` y `distribucion`. El inventario
+descuenta, traslada, ajusta y anula con el kardex como fuente de verdad, y
+aguanta dos meseros vendiendo a la vez; la barra abre caja sola, lleva cuentas
+con pulsera, cobra y cierra cuadrando; el mayoreo le toma el pedido a una
+tienda, lo despacha descontando de la bodega, lo devuelve entero si no se pudo
+entregar, lo vuelve a despachar y lo cobra por abonos, avisando de quién se
+pasó del plazo; y por encima de todo, el staff da de alta y suspende negocios,
+y el administrador ve cuánto puso cada canal.
 
-Lo siguiente son `eventos` (la barra: cuentas, pulseras y cobro) y
-`distribucion` (el mayoreo). Todavía **no hay pantallas**.
+**El backend está completo** (342 pruebas en verde). Lo siguiente son las
+**pantallas**: todavía no hay ninguna.
