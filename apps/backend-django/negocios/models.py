@@ -34,3 +34,8 @@ class Negocio(ModeloConFechas):
     def esta_operativo(self) -> bool:
         """El negocio puede operar (no está suspendido)."""
         return self.estado == self.Estado.ACTIVO
+
+
+# Ver el comentario de `ENUM_NAME_OVERRIDES` en `config/settings/base.py`:
+# varios campos se llaman `estado` y el esquema necesita distinguirlos.
+ESTADOS_DE_NEGOCIO = Negocio.Estado.choices

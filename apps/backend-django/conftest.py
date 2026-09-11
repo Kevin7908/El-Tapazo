@@ -1,10 +1,13 @@
 """Fixtures compartidas por las pruebas de todas las apps.
 
-Las cuatro de datos crean **una persona de cada rol en el mismo negocio**. Que
+Las de datos crean **una persona de cada rol en el mismo negocio**. Que
 compartan negocio es lo que las hace útiles: casi toda prueba de API necesita
 comprobar dos cosas —que el rol correcto puede, y que un negocio no ve lo del
 otro—, y para lo segundo basta con que una fábrica cree su propio negocio
 aparte (`FabricaDeProducto()` sin argumentos ya es de otro negocio).
+
+`staff` es la excepción: no pertenece a ningún negocio, y por eso ninguno de
+los permisos por rol le sirve.
 """
 
 from collections.abc import Callable
@@ -15,7 +18,7 @@ from rest_framework.test import APIClient
 from negocios.models import Negocio
 from negocios.pruebas.fabricas import FabricaDeNegocio
 from usuarios.models import Rol, Usuario
-from usuarios.pruebas.fabricas import FabricaDeUsuario
+from usuarios.pruebas.fabricas import FabricaDeStaffDePlataforma, FabricaDeUsuario
 
 
 @pytest.fixture
@@ -46,6 +49,12 @@ def cajero(negocio) -> Usuario:
 def mesero(negocio) -> Usuario:
     """Opera la barra: abre cuentas, asigna pulseras y toma comandas. No cobra."""
     return FabricaDeUsuario(negocio=negocio, rol=Rol.MESERO)
+
+
+@pytest.fixture
+def staff(db) -> Usuario:
+    """El staff de la plataforma: da de alta negocios y no pertenece a ninguno."""
+    return FabricaDeStaffDePlataforma()
 
 
 @pytest.fixture

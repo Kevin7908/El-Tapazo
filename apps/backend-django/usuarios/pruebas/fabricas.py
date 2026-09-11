@@ -39,6 +39,20 @@ class FabricaDeAdministrador(FabricaDeUsuario):
     rol = Rol.ADMINISTRADOR
 
 
+class FabricaDeStaffDePlataforma(FabricaDeUsuario):
+    """Quien da de alta los negocios: existe por encima de todos y no tiene ninguno.
+
+    Sin negocio y sin rol, que es lo que permite la restricción
+    `usuario_requiere_negocio_y_rol` cuando `is_superuser` está puesto. Por eso
+    ninguno de los permisos por rol le sirve: todos exigen `negocio_id`.
+    """
+
+    negocio = None
+    rol = ""
+    es_staff = True
+    is_superuser = True
+
+
 class FabricaDeInvitacion(factory.django.DjangoModelFactory):
     """Invitación pendiente. El token en claro queda en `token_en_claro`."""
 
