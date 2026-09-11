@@ -11,7 +11,9 @@ EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
 # Sin límite de peticiones: si no, una prueba que pruebe diez contraseñas malas
 # se choca con el freno de fuerza bruta en vez de con lo que quería probar.
+# Se apagan todos los que declara base.py: cada scope tiene que seguir existiendo
+# (DRF falla si una vista pide uno que no está), solo que sin tasa.
 REST_FRAMEWORK = {
     **REST_FRAMEWORK,
-    "DEFAULT_THROTTLE_RATES": {"inicio_sesion": None, "correos_salientes": None},
+    "DEFAULT_THROTTLE_RATES": dict.fromkeys(REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]),
 }
