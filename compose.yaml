@@ -105,6 +105,12 @@ services:
       target: development
     container_name: tapaso_frontend
     restart: unless-stopped
+    # El script instala las dependencias si el package-lock.json cambió desde la
+    # última vez: así una dependencia nueva le llega a todo el equipo con un
+    # `./dev.sh up`, sin reconstruir. Definir `entrypoint` borra el comando de la
+    # imagen, por eso se repite aquí.
+    entrypoint: ["sh", "scripts/entrypoint.sh"]
+    command: ["npm", "run", "dev", "--", "--host"]
     environment:
       VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/api/v1}
       VITE_APP_NAME: ${VITE_APP_NAME:-El Tapaso}

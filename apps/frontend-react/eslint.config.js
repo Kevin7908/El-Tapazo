@@ -23,7 +23,16 @@ export default [
       ...js.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // La regla base no ve el JSX: un componente que solo se usa como <Icono />
+      // parecería sin usar. Por eso se ignoran los nombres en mayúscula, también
+      // cuando llegan como prop (`{ Icono }`).
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^[A-Z_]' }],
     },
+  },
+  {
+    // Las ayudas de prueba mezclan componentes y funciones en un mismo archivo.
+    // Nunca se montan en la aplicación, así que la recarga en caliente no aplica.
+    files: ['src/pruebas/**', '**/*.test.{js,jsx}'],
+    rules: { 'react-refresh/only-export-components': 'off' },
   },
 ]

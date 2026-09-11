@@ -9,7 +9,9 @@ WORKDIR /app
 
 # Se copian solo los manifiestos para aprovechar la caché de capas de Docker.
 COPY package*.json ./
-RUN npm ci
+# La huella le cuenta a scripts/entrypoint.sh que estas dependencias ya están al
+# día, para que no las vuelva a instalar en el primer arranque.
+RUN npm ci && sha256sum package-lock.json | cut -d ' ' -f 1 > node_modules/.huella-package-lock
 
 EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host"]
