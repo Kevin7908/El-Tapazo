@@ -32,4 +32,7 @@ echo "==> Base de datos disponible."
 echo "==> Aplicando migraciones..."
 python manage.py migrate --noinput
 
+echo "==> Creando datos iniciales (si faltan)..."
+python manage.py crear_datos_iniciales
+
 exec "$@"
