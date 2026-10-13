@@ -3,8 +3,13 @@ import { Outlet } from 'react-router-dom'
 
 import Encabezado from '@/componentes/estructura/Encabezado'
 import MenuLateral from '@/componentes/estructura/MenuLateral'
+import RecordatorioDePausa from '@/componentes/estructura/RecordatorioDePausa'
 import { useUsuarioDeSesion } from '@/estado/sesion'
 import { useCerrarSesion } from '@/modulos/autenticacion/hooks/useCerrarSesion'
+
+// Temporalmente un minuto para validar el recordatorio. Al terminar las pruebas,
+// quitar la prop `intervaloMs` del componente para recuperar sus 60 minutos.
+const INTERVALO_DE_PAUSA_EN_PRUEBA_MS = 60 * 1000
 
 /**
  * El armazón del panel para quien ya entró: el menú lateral, la barra de arriba
@@ -67,6 +72,7 @@ export default function PlantillaPrincipal() {
           <Outlet />
         </main>
       </div>
+      <RecordatorioDePausa intervaloMs={INTERVALO_DE_PAUSA_EN_PRUEBA_MS} />
     </div>
   )
 }
