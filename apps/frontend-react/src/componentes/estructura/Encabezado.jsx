@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 
 import { RUTAS } from '@/configuracion/rutas'
 
+import CintaInformativa from './CintaInformativa'
 import UsuarioEnSesion from './UsuarioEnSesion'
 
 const CLASES_DE_BOTON_CUADRADO =
@@ -21,6 +22,8 @@ export default function Encabezado({ usuario, menuAbierto, alAbrirMenu }) {
       >
         <ListIcon size={20} aria-hidden="true" />
       </button>
+
+      <CintaInformativa />
 
       <div className="ml-auto flex items-center gap-3">
         <Link

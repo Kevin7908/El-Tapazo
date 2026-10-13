@@ -8,6 +8,7 @@ import EsqueletoDeClientes from '@/modulos/clientes/componentes/EsqueletoDeClien
 import EsqueletoDeCategorias from '@/modulos/catalogo/componentes/EsqueletoDeCategorias'
 import EsqueletoDeProductos from '@/modulos/catalogo/componentes/EsqueletoDeProductos'
 import EsqueletoDeProveedores from '@/modulos/catalogo/componentes/EsqueletoDeProveedores'
+import EsqueletoDePqrs from '@/modulos/pqrs/componentes/EsqueletoDePqrs'
 import EsqueletoDelTablero from '@/modulos/tablero/componentes/EsqueletoDelTablero'
 import PaginaEnConstruccion from '@/paginas/PaginaEnConstruccion.jsx'
 import PaginaNoEncontrada from '@/paginas/PaginaNoEncontrada.jsx'
@@ -40,6 +41,7 @@ const PaginaCategorias = lazy(() => import('@/modulos/catalogo/paginas/PaginaCat
 const PaginaProductos = lazy(() => import('@/modulos/catalogo/paginas/PaginaProductos'))
 const PaginaProveedores = lazy(() => import('@/modulos/catalogo/paginas/PaginaProveedores'))
 const PaginaDetalleProducto = lazy(() => import('@/modulos/catalogo/paginas/PaginaDetalleProducto'))
+const PaginaPqrs = lazy(() => import('@/modulos/pqrs/paginas/PaginaPqrs'))
 
 // Las secciones del menú que todavía no tienen pantalla se ven dentro del panel,
 // con el menú a mano, en vez de mandar a la página de «no existe».
@@ -50,7 +52,8 @@ const SECCIONES_EN_CONSTRUCCION = ELEMENTOS_DEL_MENU.filter(
     elemento.ruta !== RUTAS.categorias &&
     elemento.ruta !== RUTAS.productos &&
     elemento.ruta !== RUTAS.proveedores &&
-    elemento.ruta !== RUTAS.clientes
+    elemento.ruta !== RUTAS.clientes &&
+    elemento.ruta !== RUTAS.pqrs
 )
 
 export default function Rutas() {
@@ -161,6 +164,14 @@ export default function Rutas() {
           element={
             <Suspense fallback={<EsqueletoDeProveedores />}>
               <PaginaProveedores />
+            </Suspense>
+          }
+        />
+        <Route
+          path={RUTAS.pqrs}
+          element={
+            <Suspense fallback={<EsqueletoDePqrs />}>
+              <PaginaPqrs />
             </Suspense>
           }
         />

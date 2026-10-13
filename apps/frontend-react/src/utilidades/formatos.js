@@ -13,6 +13,12 @@ const FECHA_LARGA = new Intl.DateTimeFormat('es-CO', {
   year: 'numeric',
 })
 
+const FECHA_CORTA = new Intl.DateTimeFormat('es-CO', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+})
+
 /** «$1.240.000». Pesos sin decimales, que es como se cobra. */
 export const formatearPesos = (valor) => `$${NUMEROS.format(valor)}`
 
@@ -23,4 +29,10 @@ export const formatearCantidad = (valor) => NUMEROS.format(valor)
 export function formatearFechaLarga(fecha) {
   const texto = FECHA_LARGA.format(fecha)
   return texto.charAt(0).toUpperCase() + texto.slice(1)
+}
+
+/** «11/09/2026». */
+export function formatearFechaCorta(fecha) {
+  const d = typeof fecha === 'string' ? new Date(fecha) : fecha
+  return FECHA_CORTA.format(d)
 }

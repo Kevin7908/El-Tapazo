@@ -1,5 +1,6 @@
 import {
   CalendarCheckIcon,
+  ChatCircleDotsIcon,
   ClipboardTextIcon,
   ContactlessPaymentIcon,
   GearSixIcon,
@@ -78,7 +79,10 @@ export const SECCIONES_DEL_MENU = [
   },
   {
     titulo: 'Clientes',
-    elementos: [{ ruta: RUTAS.clientes, etiqueta: 'Clientes', Icono: UsersIcon }],
+    elementos: [
+      { ruta: RUTAS.clientes, etiqueta: 'Clientes', Icono: UsersIcon },
+      { ruta: RUTAS.pqrs, etiqueta: 'PQRs', Icono: ChatCircleDotsIcon },
+    ],
   },
 ]
 

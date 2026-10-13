@@ -22,6 +22,7 @@ test('mesero y cajero no ven lo que es del administrador', () => {
     'Jornadas y caja',
     'Cuentas',
     'Clientes',
+    'PQRs',
   ])
 })
 

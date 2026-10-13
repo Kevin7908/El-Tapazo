@@ -21,5 +21,6 @@ export const RUTAS = {
   tiendas: '/tiendas',
   cartera: '/cartera',
   clientes: '/clientes',
+  pqrs: '/pqrs',
   configuracion: '/configuracion',
 }
